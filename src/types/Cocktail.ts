@@ -1,0 +1,33 @@
+type Cocktail = {
+  format?: any;
+  $id?: string;
+  inputValue?: any;
+  category?: string;
+  extraIngredients?: string[];
+  extraIngredientsUnits?: string[];
+  extraIngredientsPerServing?: number[];
+  garnish?: string[];
+  garnishUnits?: string[];
+  garnishPerServing?: number[];
+  mixers?: string[];
+  mixersPerServing?: number[]; //Parts
+  img?: string;
+  partEqualsOz?: number;
+  liquor?: string;
+  liquorParts?: number;
+  mixer1?: string;
+  mixer1Parts?: number;
+  mixer2?: string;
+  mixer2Parts?: number;
+  mixer3?: string;
+  mixer3Parts?: number;
+  mixer4?: string;
+  mixer4Parts?: number;
+  name?: string;
+  recipe?: string;
+  servingSizeOz?: number;
+  servings?: number;
+  fieldID?: string;
+  index?: number;
+};
+export type { Cocktail };

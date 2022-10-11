@@ -1,0 +1,38 @@
+{
+	"name": "pourgirlapp",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@emotion/react": "^11.10.0",
+		"@emotion/styled": "^11.10.0",
+		"@mui/icons-material": "^5.8.4",
+		"@mui/material": "^5.9.2",
+		"@reduxjs/toolkit": "^1.8.3",
+		"appwrite": "^9.0.1",
+		"formik": "^2.2.9",
+		"lodash": "^4.17.21",
+		"pluralize": "^8.0.0",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"react-redux": "^8.0.2",
+		"react-router-dom": "^6.3.0",
+		"use-debounce": "^8.0.3",
+		"uuid": "^8.3.2",
+		"yup": "^0.32.11"
+	},
+	"devDependencies": {
+		"@types/pluralize": "^0.0.29",
+		"@types/react": "^18.0.15",
+		"@types/react-dom": "^18.0.6",
+		"@types/uuid": "^8.3.4",
+		"@vitejs/plugin-react": "^2.0.0",
+		"typescript": "^4.6.4",
+		"vite": "^3.0.0"
+	}
+}

@@ -1,0 +1,20 @@
+{
+	"short_name": "Pour Girl",
+	"name": "Pour Girl Bartending",
+	"icons": [
+		{
+			"src": "./src/img/pour-girl-emblem.png",
+			"sizes": "64x64 32x32 24x24 16x16",
+			"type": "image/png"
+		},
+		{
+			"src": "./src/img/pour-girl-app-icon.jpg",
+			"type": "image/jpg",
+			"sizes": "250x250"
+		}
+	],
+	"start_url": ".",
+	"display": "standalone",
+	"theme_color": "#867ab2",
+	"background_color": "#867ab2"
+}
