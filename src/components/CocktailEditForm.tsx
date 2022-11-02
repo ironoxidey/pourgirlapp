@@ -47,6 +47,9 @@ const CocktailEditForm = ({
   const stateCocktailsList = useAppSelector(
     (state: any) => state.cocktails.cocktails
   );
+  const statePublicCocktailsList = useAppSelector(
+    (state: any) => state.cocktails.public
+  );
 
   const [formError, setFormError] = useState("");
 
@@ -71,10 +74,16 @@ const CocktailEditForm = ({
     //console.log("form values being sent to database", values);
 
     let promise;
+    let promise2;
     if (values.$id) {
       //update
       promise = databases.updateDocument(
-        "62e751d1a917793781dd",
+        "62e751d1a917793781dd", //Cocktails
+        values.$id,
+        values
+      );
+      promise2 = databases.updateDocument(
+        "634dd9c197956ef891ac", //Public Cocktails
         values.$id,
         values
       );

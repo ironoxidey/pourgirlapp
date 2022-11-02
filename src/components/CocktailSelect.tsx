@@ -100,13 +100,13 @@ const CocktailSelect = (props: propsTypes) => {
   useEffect(() => {
     const documents = databases.listDocuments(
       "62e751d1a917793781dd", // collectionId
-      [], // queries
-      100, // limit
-      0, // offset
-      "", // cursor
-      "after", // cursorDirection
-      ["category", "name"], // orderAttributes
-      ["ASC", "ASC"] // orderTypes
+      [] // queries
+      // 100, // limit
+      // 0, // offset
+      // "", // cursor
+      // "after", // cursorDirection
+      // ["category", "name"], // orderAttributes
+      // ["ASC", "ASC"] // orderTypes
     );
 
     documents.then(

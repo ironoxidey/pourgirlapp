@@ -1,6 +1,7 @@
 type Cocktail = {
   format?: any;
   $id?: string;
+  cocktail_id?: string;
   inputValue?: any;
   category?: string;
   extraIngredients?: string[];
