@@ -102,7 +102,7 @@ const CocktailSelect = (props: propsTypes) => {
     const documents = databases.listDocuments(
       "62e751ad5c4167bdba50", //database_id
       "62e751d1a917793781dd", // collectionId
-      [Query.orderAsc("category"), Query.orderAsc("name")] // queries
+      [Query.orderAsc("category"), Query.orderAsc("name"), Query.limit(100)] // queries
       // 100, // limit
       // 0, // offset
       // "", // cursor
