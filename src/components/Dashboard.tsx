@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { account, databases } from "../appwrite/appwriteConfig";
+import { Query } from "appwrite";
 import { useNavigate, Link } from "react-router-dom";
 import { Grid, Typography, Box, TextField, Autocomplete } from "@mui/material";
 import NavBar from "./NavBar";
@@ -101,8 +102,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     const documents = databases.listDocuments(
+      "62e751ad5c4167bdba50", //database_id
       "62e751d1a917793781dd", // collectionId
-      [] // queries
+      [Query.orderAsc("category"), Query.orderAsc("name")] // queries
       // 100, // limit
       // 0, // offset
       // '', // cursor

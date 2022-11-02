@@ -78,19 +78,22 @@ const CocktailEditForm = ({
     if (values.$id) {
       //update
       promise = databases.updateDocument(
-        "62e751d1a917793781dd", //Cocktails
+        "62e751ad5c4167bdba50", //database_id
+        "62e751d1a917793781dd", //collection_id - Cocktails
         values.$id,
         values
       );
       promise2 = databases.updateDocument(
-        "634dd9c197956ef891ac", //Public Cocktails
+        "62e751ad5c4167bdba50", //database_id
+        "634dd9c197956ef891ac", //collection_id - Public Cocktails
         values.$id,
         values
       );
     } else {
       //create
       promise = databases.createDocument(
-        "62e751d1a917793781dd",
+        "62e751ad5c4167bdba50", //database_id
+        "62e751d1a917793781dd", //collection_id
         "unique()",
         values
       );
@@ -111,8 +114,9 @@ const CocktailEditForm = ({
 
   const onDelete = (cocktailID: string) => {
     const promise = databases.deleteDocument(
-      "62e751d1a917793781dd",
-      cocktailID
+      "62e751ad5c4167bdba50", //database_id
+      "62e751d1a917793781dd", //collection_id
+      cocktailID //document_id
     );
     promise?.then(
       function (response) {
