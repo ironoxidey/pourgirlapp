@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Form, Formik } from "formik";
 import _ from "lodash";
+import { v4 as uuid } from "uuid";
 
 import {
   Grid,
@@ -70,32 +71,118 @@ const CocktailEditForm = ({
     150
   );
 
+  // useEffect(() => {
+  //   if (stateCocktailsList) {
+  //     let promise: Promise<any>[] = [];
+  //     stateCocktailsList.map((cocktail: Cocktail, index: number) => {
+  //       const uniqueID = uuid();
+  //       if (cocktail.$id) {
+  //         const theCocktail = {
+  //           cocktail_id: cocktail.$id,
+  //           name: cocktail.name,
+  //           category: cocktail.category,
+  //           liquor: cocktail.liquor,
+  //           garnish: cocktail.garnish,
+  //           extraIngredients: cocktail.extraIngredients,
+  //           mixers: cocktail.mixers,
+  //           img: cocktail.img,
+  //         };
+  //         console.log("theCocktail", theCocktail);
+  //         promise[index] = databases.createDocument(
+  //           "62e751ad5c4167bdba50", //database_id
+  //           "634dd9c197956ef891ac", //collection_id - Public Cocktails
+  //           theCocktail.cocktail_id,
+  //           theCocktail
+  //         );
+  //       }
+
+  //       promise[index]?.then(
+  //         function (response) {
+  //           console.log(response); // Success
+  //           // //dispatch(setCocktailsUpdate(1));
+  //           // dialogHandleClose();
+  //         },
+  //         function (error) {
+  //           console.log(error); // Failure
+  //           console.log("error.message", error.message); // Failure
+  //           setFormError(error.message);
+  //         }
+  //       );
+  //     });
+  //   }
+  // }, [stateCocktailsList]);
+
   const onSubmit = (values: Cocktail) => {
     //console.log("form values being sent to database", values);
-
+    const theCocktail = {
+      img: values.img,
+      name: values.name,
+      category: values.category,
+      liquor: values.liquor,
+      liquorParts: values.liquorParts,
+      garnish: values.garnish,
+      extraIngredients: values.extraIngredients,
+      recipe: values.recipe,
+      servingSizeOz: values.servingSizeOz,
+      mixers: values.mixers,
+      mixersPerServing: values.mixersPerServing,
+      garnishPerServing: values.garnishPerServing,
+      extraIngredientsPerServing: values.extraIngredientsPerServing,
+      garnishUnits: values.garnishUnits,
+      extraIngredientsUnits: values.extraIngredientsUnits,
+      partEqualsOz: values.partEqualsOz,
+    };
     let promise;
     let promise2;
     if (values.$id) {
       //update
+
       promise = databases.updateDocument(
         "62e751ad5c4167bdba50", //database_id
         "62e751d1a917793781dd", //collection_id - Cocktails
         values.$id,
-        values
+        theCocktail
       );
+      const thePublicCocktail = {
+        cocktail_id: values.$id,
+        name: values.name,
+        category: values.category,
+        liquor: values.liquor,
+        garnish: values.garnish,
+        extraIngredients: values.extraIngredients,
+        mixers: values.mixers,
+        img: values.img,
+      };
       promise2 = databases.updateDocument(
         "62e751ad5c4167bdba50", //database_id
         "634dd9c197956ef891ac", //collection_id - Public Cocktails
         values.$id,
-        values
+        thePublicCocktail
       );
     } else {
       //create
+      const uniqueID = uuid();
+      const thePublicCocktail = {
+        cocktail_id: uniqueID,
+        name: values.name,
+        category: values.category,
+        liquor: values.liquor,
+        garnish: values.garnish,
+        extraIngredients: values.extraIngredients,
+        mixers: values.mixers,
+        img: values.img,
+      };
       promise = databases.createDocument(
         "62e751ad5c4167bdba50", //database_id
         "62e751d1a917793781dd", //collection_id
-        "unique()",
-        values
+        uniqueID,
+        theCocktail
+      );
+      promise2 = databases.createDocument(
+        "62e751ad5c4167bdba50", //database_id
+        "634dd9c197956ef891ac", //collection_id - Public Cocktails
+        uniqueID,
+        thePublicCocktail
       );
     }
     promise?.then(
@@ -110,15 +197,42 @@ const CocktailEditForm = ({
         setFormError(error.message);
       }
     );
+    promise2?.then(
+      function (response) {
+        console.log(response); // Success
+      },
+      function (error) {
+        console.log(error); // Failure
+        console.log("error.message", error.message); // Failure
+        setFormError(error.message);
+      }
+    );
   };
 
   const onDelete = (cocktailID: string) => {
     const promise = databases.deleteDocument(
       "62e751ad5c4167bdba50", //database_id
-      "62e751d1a917793781dd", //collection_id
+      "62e751d1a917793781dd", //collection_id - Cocktails
+      cocktailID //document_id
+    );
+    const promise2 = databases.deleteDocument(
+      "62e751ad5c4167bdba50", //database_id
+      "634dd9c197956ef891ac", //collection_id - Public Cocktails
       cocktailID //document_id
     );
     promise?.then(
+      function (response) {
+        console.log(response); // Success
+        dispatch(setCocktailsUpdate(1));
+        dialogHandleClose();
+      },
+      function (error) {
+        console.log(error); // Failure
+        console.log("error.message", error.message); // Failure
+        setFormError(error.message);
+      }
+    );
+    promise2?.then(
       function (response) {
         console.log(response); // Success
         dispatch(setCocktailsUpdate(1));
