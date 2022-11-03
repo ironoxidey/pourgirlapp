@@ -18,6 +18,9 @@ import {
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HighlightOffTwoToneIcon from "@mui/icons-material/HighlightOffTwoTone";
+import LocalBarTwoToneIcon from "@mui/icons-material/LocalBarTwoTone";
+import { Calculate } from "@mui/icons-material";
+
 import TextFieldWrapper from "./common/TextField";
 
 import { addCocktail, updateCocktail } from "../reducers/groceriesSlice";
@@ -27,7 +30,6 @@ import { useAppSelector, useAppDispatch } from "../reducers/hooks";
 
 import { useDebouncedCallback } from "use-debounce";
 import { Cocktail } from "../types/Cocktail";
-import { Calculate } from "@mui/icons-material";
 import { toTitleCase } from "./common/toTitleCase";
 
 type FormState = {
@@ -189,243 +191,267 @@ const CocktailSelect = (props: propsTypes) => {
                   </Box>
                   <Grid
                     container
+                    className="cocktailContents"
                     sx={{
                       justifyContent: "center",
                       border: "2px solid var(--orange)",
                       borderRadius: "10px",
                       overflow: "hidden",
+                      flexWrap: "nowrap",
+                      alignItems: "center",
                     }}
                   >
-                    <Grid
-                      container
-                      justifyContent="space-between"
-                      className="cocktailServings"
-                      sx={{
-                        width: "100%",
-                        padding:
-                          cocktail && cocktail.$id
-                            ? "20px 20px 0"
-                            : "20px 20px",
-                        textAlign: "center",
-                      }}
-                    >
-                      <Grid
-                        item
-                        className="cocktailSelect"
-                        sx={{
-                          width:
-                            cocktail && cocktail.$id
-                              ? "calc(100% - 20px - 150px)"
-                              : "100%",
-                          margin: "0 auto",
-                          transition:
-                            "width .3s cubic-bezier(0.23, 1, 0.32, 1)",
-                        }}
-                      >
-                        <Autocomplete
-                          id={"cocktail" + props.cIndex}
-                          disableClearable
-                          blurOnSelect
-                          defaultValue={
-                            props.cocktail &&
-                            props.cocktail.$id &&
-                            props.cocktail
-                          }
-                          options={cocktails}
-                          groupBy={(cocktail: any) => cocktail.category}
-                          getOptionLabel={(cocktail: any) => cocktail.name}
-                          onFocus={() => {
-                            dispatch(setRightToMakeChanges("FORM"));
-                          }}
-                          onChange={(e: any, value: any) => {
-                            handleOnChange(value, servings);
-                            //console.log('autocomplete onChange', value);
-
-                            setFieldValue(
-                              "cocktail",
-                              value !== null
-                                ? value
-                                : INITIAL_FORM_STATE.cocktail
-                            );
-
-                            //console.log('values.cocktail', cocktail);
-                          }}
-                          renderOption={(props, option, { selected }) => (
-                            <li {...props}>
-                              <Tooltip
-                                arrow={true}
-                                placement="bottom-start"
-                                title={
-                                  <>
-                                    <div>
-                                      {option.liquor && (
-                                        <>{toTitleCase(option.liquor)}</>
-                                      )}
-                                      {option.mixers &&
-                                        option.mixers.length > -1 &&
-                                        option.mixers.map(
-                                          (mixer: string, index: number) => (
-                                            <>
-                                              {(option.liquor || index > 0) &&
-                                              mixer != ""
-                                                ? ", "
-                                                : ""}
-                                              {toTitleCase(mixer)}
-                                            </>
-                                          )
-                                        )}
-                                      {option.garnish &&
-                                        option.garnish.map(
-                                          (garnish: string, index: number) => (
-                                            <>
-                                              {(option.liquor ||
-                                                option.mixers ||
-                                                index > 0) &&
-                                              garnish != ""
-                                                ? ", "
-                                                : ""}
-                                              {toTitleCase(garnish)}
-                                            </>
-                                          )
-                                        )}
-                                      {option.extraIngredients &&
-                                        option.extraIngredients.map(
-                                          (
-                                            extraIngredient: string,
-                                            index: number
-                                          ) => (
-                                            <>
-                                              {(option.liquor ||
-                                                option.mixers ||
-                                                option.garnish ||
-                                                index > 0) &&
-                                              extraIngredient != ""
-                                                ? ", "
-                                                : ""}
-                                              {toTitleCase(extraIngredient)}
-                                            </>
-                                          )
-                                        )}
-                                    </div>
-                                  </>
-                                }
-                              >
-                                <Grid container alignItems="center">
-                                  <Avatar
-                                    src={option.img}
-                                    sx={{ marginRight: "4px" }}
-                                  />
-                                  <Typography
-                                    sx={{
-                                      margin: "0 4px",
-                                    }}
-                                  >
-                                    {option.name}
-                                  </Typography>
-                                </Grid>
-                              </Tooltip>
-                            </li>
-                          )}
-                          renderInput={(params: any) => (
-                            <TextField
-                              {...params}
-                              sx={{ width: "100%" }}
-                              variant="standard"
-                              label={`Cocktail #${props.cIndex}`}
-                              name={"cocktail" + props.cIndex}
-                              onFocus={() => {
-                                dispatch(setRightToMakeChanges("FORM"));
-                              }}
-                            />
-                          )}
-                        ></Autocomplete>
-                      </Grid>
-
-                      <Grid
-                        item
-                        className="servings"
-                        sx={{
-                          width: cocktail && cocktail.$id ? "150px" : "0px",
-                          marginLeft: cocktail && cocktail.$id ? "20px" : "0px",
-                          overflow: "hidden",
-                          transition: "all .3s cubic-bezier(0.23, 1, 0.32, 1)",
-                        }}
-                      >
-                        <TextFieldWrapper
-                          name="servings"
-                          label="How many servings?"
-                          type="number"
-                          defaultValue={props.servings}
-                          onChange={handleOnChange(cocktail, servings)}
-                          onFocus={() => {
-                            dispatch(setRightToMakeChanges("FORM"));
-                            setServingsFocus(true);
-                          }}
-                          onBlur={() => setServingsFocus(false)}
-                        ></TextFieldWrapper>
-                      </Grid>
-                    </Grid>
-                    {cocktail && cocktail.$id && (
-                      <>
-                        <Grid
-                          container
-                          flexDirection="column"
+                    {cocktail && cocktail.img && (
+                      <Grid item>
+                        <Avatar
+                          src={cocktail && cocktail.img}
                           sx={{
-                            justifyContent: "center",
-                            padding: "0 20px 20px",
-                            flexWrap: "nowrap",
+                            marginLeft: "10px",
+                            width: "75px",
+                            height: "75px",
                           }}
-                          className="ingredients"
-                        >
-                          {cocktail.liquor && (
-                            <>{toTitleCase(cocktail.liquor)}</>
-                          )}
-                          {cocktail.mixers &&
-                            cocktail.mixers.length > 0 &&
-                            cocktail.mixers.map(
-                              (mixer: string, index: number) => (
-                                <>
-                                  {cocktail.liquor || index > 0 ? ", " : ""}
-                                  {toTitleCase(mixer)}
-                                </>
-                              )
-                            )}
-                          {cocktail.garnish &&
-                            cocktail.garnish.length > 0 &&
-                            cocktail.garnish.map(
-                              (garnish: string, index: number) => (
-                                <>
-                                  {(cocktail.liquor ||
-                                    cocktail.mixers ||
-                                    index > 0) &&
-                                  garnish != ""
-                                    ? ", "
-                                    : ""}
-                                  {toTitleCase(garnish)}
-                                </>
-                              )
-                            )}
-                          {cocktail.extraIngredients &&
-                            cocktail.extraIngredients.length > 0 &&
-                            cocktail.extraIngredients.map(
-                              (extraIngredient: string, index: number) => (
-                                <>
-                                  {(cocktail.liquor ||
-                                    cocktail.mixers ||
-                                    cocktail.garnish ||
-                                    index > 0) &&
-                                  extraIngredient != ""
-                                    ? ", "
-                                    : ""}
-                                  {toTitleCase(extraIngredient)}
-                                </>
-                              )
-                            )}
-                          {/* END .liquorMixers */}
-                        </Grid>
-                        {/* END .ingredients */}
-                      </>
+                        />
+                      </Grid>
                     )}
+                    <Grid container>
+                      <Grid
+                        container
+                        justifyContent="space-between"
+                        className="cocktailServings"
+                        sx={{
+                          width: "100%",
+                          padding:
+                            cocktail && cocktail.$id
+                              ? "20px 20px 0"
+                              : "20px 20px",
+                          textAlign: "center",
+                        }}
+                      >
+                        <Grid
+                          item
+                          className="cocktailSelect"
+                          sx={{
+                            width:
+                              cocktail && cocktail.$id
+                                ? "calc(100% - 20px - 150px)"
+                                : "100%",
+                            margin: "0 auto",
+                            transition:
+                              "width .3s cubic-bezier(0.23, 1, 0.32, 1)",
+                          }}
+                        >
+                          <Autocomplete
+                            id={"cocktail" + props.cIndex}
+                            disableClearable
+                            blurOnSelect
+                            defaultValue={
+                              props.cocktail &&
+                              props.cocktail.$id &&
+                              props.cocktail
+                            }
+                            options={cocktails}
+                            groupBy={(cocktail: any) => cocktail.category}
+                            getOptionLabel={(cocktail: any) => cocktail.name}
+                            onFocus={() => {
+                              dispatch(setRightToMakeChanges("FORM"));
+                            }}
+                            onChange={(e: any, value: any) => {
+                              handleOnChange(value, servings);
+                              //console.log('autocomplete onChange', value);
+
+                              setFieldValue(
+                                "cocktail",
+                                value !== null
+                                  ? value
+                                  : INITIAL_FORM_STATE.cocktail
+                              );
+
+                              //console.log('values.cocktail', cocktail);
+                            }}
+                            renderOption={(props, option, { selected }) => (
+                              <li {...props}>
+                                <Tooltip
+                                  arrow={true}
+                                  placement="bottom-start"
+                                  title={
+                                    <>
+                                      <div>
+                                        {option.liquor && (
+                                          <>{toTitleCase(option.liquor)}</>
+                                        )}
+                                        {option.mixers &&
+                                          option.mixers.length > -1 &&
+                                          option.mixers.map(
+                                            (mixer: string, index: number) => (
+                                              <>
+                                                {(option.liquor || index > 0) &&
+                                                mixer != ""
+                                                  ? ", "
+                                                  : ""}
+                                                {toTitleCase(mixer)}
+                                              </>
+                                            )
+                                          )}
+                                        {option.garnish &&
+                                          option.garnish.map(
+                                            (
+                                              garnish: string,
+                                              index: number
+                                            ) => (
+                                              <>
+                                                {(option.liquor ||
+                                                  option.mixers ||
+                                                  index > 0) &&
+                                                garnish != ""
+                                                  ? ", "
+                                                  : ""}
+                                                {toTitleCase(garnish)}
+                                              </>
+                                            )
+                                          )}
+                                        {option.extraIngredients &&
+                                          option.extraIngredients.map(
+                                            (
+                                              extraIngredient: string,
+                                              index: number
+                                            ) => (
+                                              <>
+                                                {(option.liquor ||
+                                                  option.mixers ||
+                                                  option.garnish ||
+                                                  index > 0) &&
+                                                extraIngredient != ""
+                                                  ? ", "
+                                                  : ""}
+                                                {toTitleCase(extraIngredient)}
+                                              </>
+                                            )
+                                          )}
+                                      </div>
+                                    </>
+                                  }
+                                >
+                                  <Grid container alignItems="center">
+                                    <Avatar
+                                      src={option.img}
+                                      sx={{ marginRight: "4px" }}
+                                    >
+                                      <LocalBarTwoToneIcon></LocalBarTwoToneIcon>
+                                    </Avatar>
+                                    <Typography
+                                      sx={{
+                                        margin: "0 4px",
+                                      }}
+                                    >
+                                      {option.name}
+                                    </Typography>
+                                  </Grid>
+                                </Tooltip>
+                              </li>
+                            )}
+                            renderInput={(params: any) => (
+                              <TextField
+                                {...params}
+                                sx={{ width: "100%" }}
+                                variant="standard"
+                                label={`Cocktail #${props.cIndex}`}
+                                name={"cocktail" + props.cIndex}
+                                onFocus={() => {
+                                  dispatch(setRightToMakeChanges("FORM"));
+                                }}
+                              />
+                            )}
+                          ></Autocomplete>
+                        </Grid>
+
+                        <Grid
+                          item
+                          className="servings"
+                          sx={{
+                            width: cocktail && cocktail.$id ? "150px" : "0px",
+                            marginLeft:
+                              cocktail && cocktail.$id ? "20px" : "0px",
+                            overflow: "hidden",
+                            transition:
+                              "all .3s cubic-bezier(0.23, 1, 0.32, 1)",
+                          }}
+                        >
+                          <TextFieldWrapper
+                            name="servings"
+                            label="How many servings?"
+                            type="number"
+                            defaultValue={props.servings}
+                            onChange={handleOnChange(cocktail, servings)}
+                            onFocus={() => {
+                              dispatch(setRightToMakeChanges("FORM"));
+                              setServingsFocus(true);
+                            }}
+                            onBlur={() => setServingsFocus(false)}
+                          ></TextFieldWrapper>
+                        </Grid>
+                      </Grid>
+                      {cocktail && cocktail.$id && (
+                        <>
+                          <Grid
+                            container
+                            flexDirection="column"
+                            sx={{
+                              justifyContent: "center",
+                              padding: "0 20px 20px",
+                              flexWrap: "nowrap",
+                            }}
+                            className="ingredients"
+                          >
+                            {cocktail.liquor && (
+                              <>{toTitleCase(cocktail.liquor)}</>
+                            )}
+                            {cocktail.mixers &&
+                              cocktail.mixers.length > 0 &&
+                              cocktail.mixers.map(
+                                (mixer: string, index: number) => (
+                                  <>
+                                    {cocktail.liquor || index > 0 ? ", " : ""}
+                                    {toTitleCase(mixer)}
+                                  </>
+                                )
+                              )}
+                            {cocktail.garnish &&
+                              cocktail.garnish.length > 0 &&
+                              cocktail.garnish.map(
+                                (garnish: string, index: number) => (
+                                  <>
+                                    {(cocktail.liquor ||
+                                      cocktail.mixers ||
+                                      index > 0) &&
+                                    garnish != ""
+                                      ? ", "
+                                      : ""}
+                                    {toTitleCase(garnish)}
+                                  </>
+                                )
+                              )}
+                            {cocktail.extraIngredients &&
+                              cocktail.extraIngredients.length > 0 &&
+                              cocktail.extraIngredients.map(
+                                (extraIngredient: string, index: number) => (
+                                  <>
+                                    {(cocktail.liquor ||
+                                      cocktail.mixers ||
+                                      cocktail.garnish ||
+                                      index > 0) &&
+                                    extraIngredient != ""
+                                      ? ", "
+                                      : ""}
+                                    {toTitleCase(extraIngredient)}
+                                  </>
+                                )
+                              )}
+                            {/* END .liquorMixers */}
+                          </Grid>
+                          {/* END .ingredients */}
+                        </>
+                      )}
+                    </Grid>
                   </Grid>
                   {/* END .cocktail# */}
                 </Grid>

@@ -33,7 +33,7 @@ import BeerSelect from "./BeerSelect";
 
 //import AutocompleteWrapper from './common/AutoComplete';
 
-const Dashboard = () => {
+const CocktailMenu = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -342,6 +342,6 @@ const Dashboard = () => {
   );
 };
 
-Dashboard.propTypes = {};
+CocktailMenu.propTypes = {};
 
-export default Dashboard;
+export default CocktailMenu;

@@ -17,6 +17,8 @@ import {
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HighlightOffTwoToneIcon from "@mui/icons-material/HighlightOffTwoTone";
+import LocalBarTwoToneIcon from "@mui/icons-material/LocalBarTwoTone";
+
 import TextFieldWrapper from "./common/TextField";
 
 import { addCocktail, updateCocktail } from "../reducers/groceriesSlice";
@@ -303,7 +305,9 @@ const CocktailSelect = (props: propsTypes) => {
                                 <Avatar
                                   src={option.img}
                                   sx={{ marginRight: "4px" }}
-                                />
+                                >
+                                  <LocalBarTwoToneIcon></LocalBarTwoToneIcon>
+                                </Avatar>
                                 <Typography
                                   sx={{
                                     margin: "0 4px",
