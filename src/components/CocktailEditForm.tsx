@@ -13,6 +13,7 @@ import {
   Typography,
   createFilterOptions,
   IconButton,
+  Avatar,
 } from "@mui/material";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
@@ -354,6 +355,76 @@ const CocktailEditForm = ({
 
                     return filtered;
                   }}
+                  renderOption={(props, option, { selected }) => (
+                    <li {...props}>
+                      {/* <Tooltip
+                        arrow={true}
+                        placement="bottom-start"
+                        title={
+                          <>
+                            <div>
+                              {option.liquor && (
+                                <>{toTitleCase(option.liquor)}</>
+                              )}
+                              {option.mixers &&
+                                option.mixers.length > -1 &&
+                                option.mixers.map(
+                                  (mixer: string, index: number) => (
+                                    <>
+                                      {option.liquor || index > 0
+                                        ? ", "
+                                        : ""}
+                                      {toTitleCase(mixer)}
+                                    </>
+                                  )
+                                )}
+                              {option.garnish &&
+                                option.garnish.map(
+                                  (garnish: string, index: number) => (
+                                    <>
+                                      {option.liquor ||
+                                      option.mixers ||
+                                      index > 0
+                                        ? ", "
+                                        : ""}
+                                      {toTitleCase(garnish)}
+                                    </>
+                                  )
+                                )}
+                              {option.extraIngredients &&
+                                option.extraIngredients.map(
+                                  (
+                                    extraIngredient: string,
+                                    index: number
+                                  ) => (
+                                    <>
+                                      {option.liquor ||
+                                      option.mixers ||
+                                      option.garnish ||
+                                      index > 0
+                                        ? ", "
+                                        : ""}
+                                      {toTitleCase(extraIngredient)}
+                                    </>
+                                  )
+                                )}
+                            </div>
+                          </>
+                        }
+                      > */}
+                      <Grid container alignItems="center">
+                        <Avatar src={option.img} sx={{ marginRight: "4px" }} />
+                        <Typography
+                          sx={{
+                            margin: "0 4px",
+                          }}
+                        >
+                          {option.name || option.inputValue}
+                        </Typography>
+                      </Grid>
+                      {/* </Tooltip> */}
+                    </li>
+                  )}
                   renderInput={(params: any) => (
                     <TextField
                       {...params}

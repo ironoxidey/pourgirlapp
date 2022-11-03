@@ -328,13 +328,13 @@ const Dashboard = () => {
 								/>
 							</Grid> */}
         </Grid>
-        {/* {((stateGroceryCocktails.length > 0 && stateGroceryCocktails[0].$id) ||
+        {((stateGroceryCocktails.length > 0 && stateGroceryCocktails[0].$id) ||
           (stateGroceryWines.length > 0 && stateGroceryWines[0].name) ||
           (stateGroceryBeers.length > 0 && stateGroceryBeers[0].name)) && (
           <Grid item sm={3}>
             <DraggablePieChart />
           </Grid>
-        )} */}
+        )}
         {/* END .cocktailCalc */}
         {/* <GroceryList /> */}
       </Grid>

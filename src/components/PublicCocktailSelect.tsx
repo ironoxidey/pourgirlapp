@@ -202,7 +202,10 @@ const CocktailSelect = (props: propsTypes) => {
                       className="cocktailServings"
                       sx={{
                         width: "100%",
-                        padding: "20px 20px",
+                        padding:
+                          cocktail && cocktail.$id
+                            ? "20px 20px 0"
+                            : "20px 20px",
                         textAlign: "center",
                       }}
                     >
@@ -210,7 +213,10 @@ const CocktailSelect = (props: propsTypes) => {
                         item
                         className="cocktailSelect"
                         sx={{
-                          width: "100%",
+                          width:
+                            cocktail && cocktail.$id
+                              ? "calc(100% - 20px - 150px)"
+                              : "100%",
                           margin: "0 auto",
                           transition:
                             "width .3s cubic-bezier(0.23, 1, 0.32, 1)",
@@ -260,7 +266,8 @@ const CocktailSelect = (props: propsTypes) => {
                                         option.mixers.map(
                                           (mixer: string, index: number) => (
                                             <>
-                                              {option.liquor || index > 0
+                                              {(option.liquor || index > 0) &&
+                                              mixer != ""
                                                 ? ", "
                                                 : ""}
                                               {toTitleCase(mixer)}
@@ -271,9 +278,10 @@ const CocktailSelect = (props: propsTypes) => {
                                         option.garnish.map(
                                           (garnish: string, index: number) => (
                                             <>
-                                              {option.liquor ||
-                                              option.mixers ||
-                                              index > 0
+                                              {(option.liquor ||
+                                                option.mixers ||
+                                                index > 0) &&
+                                              garnish != ""
                                                 ? ", "
                                                 : ""}
                                               {toTitleCase(garnish)}
@@ -287,10 +295,11 @@ const CocktailSelect = (props: propsTypes) => {
                                             index: number
                                           ) => (
                                             <>
-                                              {option.liquor ||
-                                              option.mixers ||
-                                              option.garnish ||
-                                              index > 0
+                                              {(option.liquor ||
+                                                option.mixers ||
+                                                option.garnish ||
+                                                index > 0) &&
+                                              extraIngredient != ""
                                                 ? ", "
                                                 : ""}
                                               {toTitleCase(extraIngredient)}
@@ -332,7 +341,7 @@ const CocktailSelect = (props: propsTypes) => {
                         ></Autocomplete>
                       </Grid>
 
-                      {/* <Grid
+                      <Grid
                         item
                         className="servings"
                         sx={{
@@ -354,7 +363,7 @@ const CocktailSelect = (props: propsTypes) => {
                           }}
                           onBlur={() => setServingsFocus(false)}
                         ></TextFieldWrapper>
-                      </Grid> */}
+                      </Grid>
                     </Grid>
                     {cocktail && cocktail.$id && (
                       <>
@@ -372,7 +381,7 @@ const CocktailSelect = (props: propsTypes) => {
                             <>{toTitleCase(cocktail.liquor)}</>
                           )}
                           {cocktail.mixers &&
-                            cocktail.mixers.length > -1 &&
+                            cocktail.mixers.length > 0 &&
                             cocktail.mixers.map(
                               (mixer: string, index: number) => (
                                 <>
@@ -382,12 +391,14 @@ const CocktailSelect = (props: propsTypes) => {
                               )
                             )}
                           {cocktail.garnish &&
+                            cocktail.garnish.length > 0 &&
                             cocktail.garnish.map(
                               (garnish: string, index: number) => (
                                 <>
-                                  {cocktail.liquor ||
-                                  cocktail.mixers ||
-                                  index > 0
+                                  {(cocktail.liquor ||
+                                    cocktail.mixers ||
+                                    index > 0) &&
+                                  garnish != ""
                                     ? ", "
                                     : ""}
                                   {toTitleCase(garnish)}
@@ -395,13 +406,15 @@ const CocktailSelect = (props: propsTypes) => {
                               )
                             )}
                           {cocktail.extraIngredients &&
+                            cocktail.extraIngredients.length > 0 &&
                             cocktail.extraIngredients.map(
                               (extraIngredient: string, index: number) => (
                                 <>
-                                  {cocktail.liquor ||
-                                  cocktail.mixers ||
-                                  cocktail.garnish ||
-                                  index > 0
+                                  {(cocktail.liquor ||
+                                    cocktail.mixers ||
+                                    cocktail.garnish ||
+                                    index > 0) &&
+                                  extraIngredient != ""
                                     ? ", "
                                     : ""}
                                   {toTitleCase(extraIngredient)}
