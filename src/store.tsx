@@ -1,15 +1,17 @@
 //when setting up, I referenced this: https://redux-toolkit.js.org/tutorials/typescript
-import { configureStore } from '@reduxjs/toolkit';
-import groceriesSlice from './reducers/groceriesSlice';
-import cocktailListSlice from './reducers/cocktailListSlice';
-import appSlice from './reducers/appSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import groceriesSlice from "./reducers/groceriesSlice";
+import cocktailListSlice from "./reducers/cocktailListSlice";
+import eventListSlice from "./reducers/eventListSlice";
+import appSlice from "./reducers/appSlice";
 
 export const store = configureStore({
-	reducer: {
-		groceries: groceriesSlice,
-		cocktails: cocktailListSlice,
-		app: appSlice,
-	},
+  reducer: {
+    groceries: groceriesSlice,
+    cocktails: cocktailListSlice,
+    events: eventListSlice,
+    app: appSlice,
+  },
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

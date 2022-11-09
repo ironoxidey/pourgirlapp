@@ -22,7 +22,7 @@ import LocalBarTwoToneIcon from "@mui/icons-material/LocalBarTwoTone";
 import TextFieldWrapper from "./common/TextField";
 
 import { addCocktail, updateCocktail } from "../reducers/groceriesSlice";
-import { setRightToMakeChanges } from "../reducers/appSlice";
+//import { setRightToMakeChanges } from "../reducers/appSlice";
 
 import { useAppSelector, useAppDispatch } from "../reducers/hooks";
 
@@ -62,7 +62,7 @@ const CocktailSelect = (props: propsTypes) => {
   const [cocktails, setCocktails] = useState<any[]>([]);
   const [ouncesPerPart, setOuncesPerPart] = useState(1);
 
-  const [servingsFocus, setServingsFocus] = useState(false);
+  // const [servingsFocus, setServingsFocus] = useState(false);
 
   const stateApp = useAppSelector((state: any) => state.app.cocktailsUpdate);
   const appRightToMakeChanges: string = useAppSelector(
@@ -228,9 +228,9 @@ const CocktailSelect = (props: propsTypes) => {
                           options={cocktails}
                           groupBy={(cocktail: any) => cocktail.category}
                           getOptionLabel={(cocktail: any) => cocktail.name}
-                          onFocus={() => {
-                            dispatch(setRightToMakeChanges("FORM"));
-                          }}
+                          // onFocus={() => {
+                          //   dispatch(setRightToMakeChanges("FORM"));
+                          // }}
                           onChange={(e: any, value: any) => {
                             handleOnChange(value, servings);
                             //console.log('autocomplete onChange', value);
@@ -326,9 +326,9 @@ const CocktailSelect = (props: propsTypes) => {
                               variant="standard"
                               label={`Cocktail #${props.cIndex}`}
                               name={"cocktail" + props.cIndex}
-                              onFocus={() => {
-                                dispatch(setRightToMakeChanges("FORM"));
-                              }}
+                              // onFocus={() => {
+                              //   dispatch(setRightToMakeChanges("FORM"));
+                              // }}
                             />
                           )}
                         ></Autocomplete>
@@ -350,11 +350,11 @@ const CocktailSelect = (props: propsTypes) => {
                           type="number"
                           defaultValue={props.servings}
                           onChange={handleOnChange(cocktail, servings)}
-                          onFocus={() => {
-                            dispatch(setRightToMakeChanges("FORM"));
-                            setServingsFocus(true);
-                          }}
-                          onBlur={() => setServingsFocus(false)}
+                          // onFocus={() => {
+                          //   dispatch(setRightToMakeChanges("FORM"));
+                          //   setServingsFocus(true);
+                          // }}
+                          // onBlur={() => setServingsFocus(false)}
                         ></TextFieldWrapper>
                       </Grid>
                     </Grid>

@@ -3,26 +3,24 @@ body {
   display: flex;
   place-items: center;
   min-width: 320px;
-  font-family: 'Caudex', serif;
+  font-family: "Caudex", serif;
   /* min-height: 100vh; */
   --purple: #867ab2;
   --teal: #81b8b2;
   --green: #86ab7f;
   --orange: #f3b79c;
   --gray: #c7c7c7;
-  font-family: 'Bree', serif;
+  font-family: "Bree", serif;
 }
 
 #root {
-
-  --primary-font: 'Bree', serif;
+  --primary-font: "Bree", serif;
 
   width: 100%;
   margin: 0 auto;
   /* padding: 2rem; */
   text-align: center;
   top: 0;
-  
 
   font-size: 16px;
   line-height: 24px;
@@ -37,7 +35,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+}
 
+.keyHeading {
+  color: var(--green);
 }
 
 input {
@@ -56,19 +57,19 @@ input:-webkit-autofill {
 }
 
 .MuiDialog-root .MuiDialog-paper .MuiInputLabel-root,
-#root .MuiInputLabel-root{
-    color: var(--teal);
+#root .MuiInputLabel-root {
+  color: var(--teal);
 }
 .MuiDialog-root .MuiDialog-paper .MuiInputBase-root:after,
-#root .MuiInputBase-root:after{
+#root .MuiInputBase-root:after {
   border-bottom-color: var(--orange);
 }
 
-#root .wine .MuiInputBase-root:after{
+#root .wine .MuiInputBase-root:after {
   border-bottom-color: var(--purple);
 }
 
-#root .beer .MuiInputBase-root:after{
+#root .beer .MuiInputBase-root:after {
   border-bottom-color: var(--green);
 }
 
@@ -91,23 +92,29 @@ input:-webkit-autofill {
   border-radius: 12px;
 }
 
-#root p, #root li, .MuiDialog-root p, .MuiDialog-root li {
-  font-family: 'Bree', serif;
+#root p,
+#root li,
+.MuiDialog-root p,
+.MuiDialog-root li {
+  font-family: "Bree", serif;
   font-weight: 300;
 }
 
-#root h3.MuiTypography-root, .MuiDialog-root h3.MuiTypography-root {
-  font-family: 'Bree', san-serif;
+#root h3.MuiTypography-root,
+.MuiDialog-root h3.MuiTypography-root {
+  font-family: "Bree", san-serif;
   font-weight: 800;
-  color: var(--teal)
+  color: var(--teal);
 }
 
-#root .MuiInput-root, .MuiDialog-root .MuiInput-root {
-  font-family: 'Bree', san-serif;
+#root .MuiInput-root,
+.MuiDialog-root .MuiInput-root {
+  font-family: "Bree", san-serif;
   font-weight: 400;
 }
-#root .MuiInputLabel-root, .MuiDialog-root .MuiInputLabel-root {
-  font-family: 'Bree', san-serif;
+#root .MuiInputLabel-root,
+.MuiDialog-root .MuiInputLabel-root {
+  font-family: "Bree", san-serif;
   font-weight: 300;
 }
 
@@ -163,7 +170,6 @@ a {
 a:hover {
   color: var(--green);
 }
-
 
 /* @media (prefers-color-scheme: light) {
   :root {

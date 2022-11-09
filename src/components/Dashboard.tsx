@@ -3,7 +3,14 @@ import PropTypes from "prop-types";
 import { account, databases } from "../appwrite/appwriteConfig";
 import { Query } from "appwrite";
 import { useNavigate, Link } from "react-router-dom";
-import { Grid, Typography, Box, TextField, Autocomplete } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  Box,
+  TextField,
+  Autocomplete,
+  Tooltip,
+} from "@mui/material";
 import NavBar from "./NavBar";
 import CocktailSelect from "./CocktailSelect";
 import GroceryList from "./GroceryList";
@@ -25,12 +32,14 @@ import {
   removeBeer,
 } from "../reducers/groceriesSlice";
 import { setCocktailList } from "../reducers/cocktailListSlice";
-import { setRightToMakeChanges } from "../reducers/appSlice";
+// import { setEventsList } from "../reducers/eventListSlice";
+// import { setRightToMakeChanges } from "../reducers/appSlice";
 import { useAppSelector, useAppDispatch } from "../reducers/hooks";
 
 import { Cocktail } from "../types/Cocktail";
 import WineSelect from "./WineSelect";
 import BeerSelect from "./BeerSelect";
+import EventDetails from "./EventDetails";
 
 //import AutocompleteWrapper from './common/AutoComplete';
 
@@ -61,6 +70,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const [auth, setAuth] = useState<any>({});
+  // const [events, setEvents] = useState<any[]>([]);
 
   //const [numCocktails, setNumCocktails] = useState(1);
 
@@ -83,7 +93,7 @@ const Dashboard = () => {
     (state: any) => state.groceries.beers
   );
   const stateApp = useAppSelector((state: any) => state.app.cocktailsUpdate);
-
+  // const stateEvents = useAppSelector((state: any) => state.events.events);
   useEffect(() => {
     //console.log('useEffect(),[account]');
     const user = account.get();
@@ -101,9 +111,9 @@ const Dashboard = () => {
   }, [account]);
 
   useEffect(() => {
-    const documents = databases.listDocuments(
+    const cocktails = databases.listDocuments(
       "62e751ad5c4167bdba50", //database_id
-      "62e751d1a917793781dd", // collectionId
+      "62e751d1a917793781dd", // collectionId - Cocktails
       [Query.orderAsc("category"), Query.orderAsc("name"), Query.limit(100)] // queries
       // 100, // limit
       // 0, // offset
@@ -113,7 +123,7 @@ const Dashboard = () => {
       // ['ASC', 'ASC'] // orderTypes
     );
 
-    documents.then(
+    cocktails.then(
       function (response: any) {
         // console.log(response); // Success
         dispatch(setCocktailList(response.documents));
@@ -125,6 +135,35 @@ const Dashboard = () => {
     );
   }, [stateApp]);
 
+  // useEffect(() => {
+  //   const typeformEvents = databases.listDocuments(
+  //     "62e751ad5c4167bdba50", //database_id
+  //     "6365068be90f6574ab0d", // collectionId - typeformEvents
+  //     [Query.orderAsc("email")] // queries
+  //     // 100, // limit
+  //     // 0, // offset
+  //     // '', // cursor
+  //     // 'after', // cursorDirection
+  //     // ['category', 'name'], // orderAttributes
+  //     // ['ASC', 'ASC'] // orderTypes
+  //   );
+
+  //   typeformEvents.then(
+  //     function (response: any) {
+  //       // console.log(response); // Success
+  //       dispatch(setEventsList(response.documents));
+  //       //setCocktails(response.documents);
+  //     },
+  //     function (error) {
+  //       console.log(error); // Failure
+  //     }
+  //   );
+  // }, [stateApp]);
+
+  // useEffect(() => {
+  //   setEvents(stateEvents);
+  // }, [stateEvents]);
+
   //Cocktails
   const [cocktailFields, setCocktailFields] = useState<any>([]);
 
@@ -133,7 +172,10 @@ const Dashboard = () => {
       stateGroceryCocktails &&
         stateGroceryCocktails.map((cocktail: any, index: number) => {
           return (
-            <Grid item onClick={() => dispatch(setRightToMakeChanges("FORM"))}>
+            <Grid
+              item
+              // onClick={() => dispatch(setRightToMakeChanges("FORM"))}
+            >
               <CocktailSelect
                 key={cocktail.index}
                 fieldID={cocktail.fieldID}
@@ -160,7 +202,10 @@ const Dashboard = () => {
       stateGroceryWines &&
         stateGroceryWines.map((wine: any, index: number) => {
           return (
-            <Grid item onClick={() => dispatch(setRightToMakeChanges("FORM"))}>
+            <Grid
+              item
+              // onClick={() => dispatch(setRightToMakeChanges("FORM"))}
+            >
               <WineSelect
                 key={wine.index}
                 fieldID={wine.fieldID}
@@ -187,7 +232,10 @@ const Dashboard = () => {
         stateGroceryBeers.map((beer: any, index: number) => {
           console.log("beer", beer);
           return (
-            <Grid item onClick={() => dispatch(setRightToMakeChanges("FORM"))}>
+            <Grid
+              item
+              // onClick={() => dispatch(setRightToMakeChanges("FORM"))}
+            >
               <BeerSelect
                 key={beer.index}
                 fieldID={beer.fieldID}
@@ -210,6 +258,7 @@ const Dashboard = () => {
       {auth && auth.$id && (
         <>
           <NavBar></NavBar>
+          <EventDetails></EventDetails>
           <Grid
             container
             className="dashboard"
@@ -247,7 +296,7 @@ const Dashboard = () => {
                     "&:hover": { transform: "scale(1.2)" },
                   }}
                   onClick={() => {
-                    dispatch(setRightToMakeChanges("FORM"));
+                    // dispatch(setRightToMakeChanges("FORM"));
                     dispatch(
                       addCocktail({
                         index: stateCocktailsLength,
@@ -278,7 +327,7 @@ const Dashboard = () => {
                     "&:hover": { transform: "scale(1.2)" },
                   }}
                   onClick={() => {
-                    dispatch(setRightToMakeChanges("FORM"));
+                    // dispatch(setRightToMakeChanges("FORM"));
                     dispatch(
                       addWine({
                         index: stateWinesLength,
@@ -310,7 +359,7 @@ const Dashboard = () => {
                     "&:hover": { transform: "scale(1.2)" },
                   }}
                   onClick={() => {
-                    dispatch(setRightToMakeChanges("FORM"));
+                    // dispatch(setRightToMakeChanges("FORM"));
                     dispatch(
                       addBeer({
                         index: stateBeersLength,
