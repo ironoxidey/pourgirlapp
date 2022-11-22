@@ -91,8 +91,8 @@ const CocktailEditForm = ({
   //         };
   //         console.log("theCocktail", theCocktail);
   //         promise[index] = databases.createDocument(
-  //           "62e751ad5c4167bdba50", //database_id
-  //           "634dd9c197956ef891ac", //collection_id - Public Cocktails
+  //           import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+  //           import.meta.env.VITE_APPWRITE_PUBLIC_COCKTAILS_COLLECTION_ID, //collection_id - Public Cocktails
   //           theCocktail.cocktail_id,
   //           theCocktail
   //         );
@@ -140,8 +140,8 @@ const CocktailEditForm = ({
       //update
 
       promise = databases.updateDocument(
-        "62e751ad5c4167bdba50", //database_id
-        "62e751d1a917793781dd", //collection_id - Cocktails
+        import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+        import.meta.env.VITE_APPWRITE_COCKTAILS_COLLECTION_ID, //collection_id - Cocktails
         values.$id,
         theCocktail
       );
@@ -156,8 +156,8 @@ const CocktailEditForm = ({
         img: values.img,
       };
       promise2 = databases.updateDocument(
-        "62e751ad5c4167bdba50", //database_id
-        "634dd9c197956ef891ac", //collection_id - Public Cocktails
+        import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+        import.meta.env.VITE_APPWRITE_PUBLIC_COCKTAILS_COLLECTION_ID, //collection_id - Public Cocktails
         values.$id,
         thePublicCocktail
       );
@@ -175,14 +175,14 @@ const CocktailEditForm = ({
         img: values.img,
       };
       promise = databases.createDocument(
-        "62e751ad5c4167bdba50", //database_id
-        "62e751d1a917793781dd", //collection_id
+        import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+        import.meta.env.VITE_APPWRITE_COCKTAILS_COLLECTION_ID, //collection_id - Cocktails
         uniqueID,
         theCocktail
       );
       promise2 = databases.createDocument(
-        "62e751ad5c4167bdba50", //database_id
-        "634dd9c197956ef891ac", //collection_id - Public Cocktails
+        import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+        import.meta.env.VITE_APPWRITE_PUBLIC_COCKTAILS_COLLECTION_ID, //collection_id - Public Cocktails
         uniqueID,
         thePublicCocktail
       );
@@ -213,13 +213,13 @@ const CocktailEditForm = ({
 
   const onDelete = (cocktailID: string) => {
     const promise = databases.deleteDocument(
-      "62e751ad5c4167bdba50", //database_id
-      "62e751d1a917793781dd", //collection_id - Cocktails
+      import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+      import.meta.env.VITE_APPWRITE_COCKTAILS_COLLECTION_ID, //collection_id - Cocktails
       cocktailID //document_id
     );
     const promise2 = databases.deleteDocument(
-      "62e751ad5c4167bdba50", //database_id
-      "634dd9c197956ef891ac", //collection_id - Public Cocktails
+      import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+      import.meta.env.VITE_APPWRITE_PUBLIC_COCKTAILS_COLLECTION_ID, //collection_id - Public Cocktails
       cocktailID //document_id
     );
     promise?.then(

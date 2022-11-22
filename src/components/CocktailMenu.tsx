@@ -79,8 +79,8 @@ const CocktailMenu = () => {
 
   useEffect(() => {
     const documents = databases.listDocuments(
-      "62e751ad5c4167bdba50", //database_id
-      "634dd9c197956ef891ac", // collectionId
+      import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+      import.meta.env.VITE_APPWRITE_PUBLIC_COCKTAILS_COLLECTION_ID, //collection_id - Public Cocktails
       [Query.orderAsc("category"), Query.orderAsc("name"), Query.limit(100)] // queries
       // 100, // limit
       // 0, // offset

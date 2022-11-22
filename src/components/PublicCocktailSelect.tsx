@@ -106,29 +106,6 @@ const CocktailSelect = (props: propsTypes) => {
     }
   }, [props.cocktail]);
 
-  // useEffect(() => {
-  //   const documents = databases.listDocuments(
-  //     "62e751ad5c4167bdba50", //database_id
-  //     "62e751d1a917793781dd", // collectionId
-  //     [Query.orderAsc("category"), Query.orderAsc("name"), Query.limit(100)] // queries
-  //     // 100, // limit
-  //     // 0, // offset
-  //     // "", // cursor
-  //     // "after", // cursorDirection
-  //     // ["category", "name"], // orderAttributes
-  //     // ["ASC", "ASC"] // orderTypes
-  //   );
-
-  //   documents.then(
-  //     function (response) {
-  //       // console.log(response); // Success
-  //       setCocktails(response.documents);
-  //     },
-  //     function (error) {
-  //       console.log(error); // Failure
-  //     }
-  //   );
-  // }, [stateApp]);
   useEffect(() => {
     setCocktails(stateCocktails);
   }, [stateCocktails]);

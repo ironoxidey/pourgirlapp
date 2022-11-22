@@ -213,7 +213,7 @@ const GroceryList = () => {
       return;
     }
 
-    let allThisItem: any[] = _.filter(collection, ["item", item]); //returns all the mixer objects of the same name, so that we can combine thier values
+    let allThisItem: any[] = _.filter(collection, ["item", item]); //returns all the mixer objects of the same name, so that we can combine their values
     let amountOzThisItem = 0;
     let amountMlThisItem = 0;
     let amountThisItem = 0;

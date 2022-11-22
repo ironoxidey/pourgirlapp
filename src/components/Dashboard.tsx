@@ -112,8 +112,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     const cocktails = databases.listDocuments(
-      "62e751ad5c4167bdba50", //database_id
-      "62e751d1a917793781dd", // collectionId - Cocktails
+      import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+      import.meta.env.VITE_APPWRITE_COCKTAILS_COLLECTION_ID, //collection_id - Cocktails
       [Query.orderAsc("category"), Query.orderAsc("name"), Query.limit(100)] // queries
       // 100, // limit
       // 0, // offset
@@ -137,8 +137,8 @@ const Dashboard = () => {
 
   // useEffect(() => {
   //   const typeformEvents = databases.listDocuments(
-  //     "62e751ad5c4167bdba50", //database_id
-  //     "6365068be90f6574ab0d", // collectionId - typeformEvents
+  //     import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+  //     import.meta.env.VITE_APPWRITE_TYPEFORM_EVENTS_COLLECTION_ID, // collectionId - typeformEvents
   //     [Query.orderAsc("email")] // queries
   //     // 100, // limit
   //     // 0, // offset
@@ -174,6 +174,7 @@ const Dashboard = () => {
           return (
             <Grid
               item
+              key={index}
               // onClick={() => dispatch(setRightToMakeChanges("FORM"))}
             >
               <CocktailSelect

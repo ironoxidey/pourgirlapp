@@ -1,3 +1,4 @@
+.env
 src/appwrite/
 src/draggable-piechart
 

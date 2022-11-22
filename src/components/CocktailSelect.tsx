@@ -103,8 +103,8 @@ const CocktailSelect = (props: propsTypes) => {
 
   useEffect(() => {
     const documents = databases.listDocuments(
-      "62e751ad5c4167bdba50", //database_id
-      "62e751d1a917793781dd", // collectionId
+      import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+      import.meta.env.VITE_APPWRITE_COCKTAILS_COLLECTION_ID, //collection_id - Cocktails
       [Query.orderAsc("category"), Query.orderAsc("name"), Query.limit(100)] // queries
       // 100, // limit
       // 0, // offset

@@ -2,14 +2,17 @@
 import { MicExternalOff, PlaylistAddOutlined } from "@mui/icons-material";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Event } from "../types/Event";
+import { GoogleCalEvent } from "../types/GoogleCalEvent";
 
 type EventsListState = {
   events: Event[];
+  googleCalEvents: GoogleCalEvent[];
   theEvent: Event;
 };
 
 const initialState: EventsListState = {
   events: [],
+  googleCalEvents: [],
   theEvent: {},
 };
 
@@ -45,6 +48,12 @@ export const eventListSlice = createSlice({
       // 	return cocktail;
       // });
     },
+    setGoogleCalEventsList: (
+      state,
+      action: PayloadAction<GoogleCalEvent[]>
+    ) => {
+      state.googleCalEvents = action.payload;
+    },
     setTheEvent: (state, action: PayloadAction<Event>) => {
       // Redux Toolkit allows us to write "mutating" logic in reducers. It
       // doesn't actually mutate the state because it uses the immer library,
@@ -74,6 +83,7 @@ export const eventListSlice = createSlice({
   },
 });
 
-export const { setEventsList, setTheEvent } = eventListSlice.actions;
+export const { setEventsList, setGoogleCalEventsList, setTheEvent } =
+  eventListSlice.actions;
 
 export default eventListSlice.reducer;
