@@ -30,6 +30,7 @@ import TextFieldWrapper from "./common/TextField";
 
 import {
   setEventsList,
+  setBartendersList,
   setGoogleCalEventsList,
   setTheEvent,
 } from "../reducers/eventListSlice";
@@ -41,6 +42,7 @@ import { Event } from "../types/Event";
 import { GoogleCalEvent } from "../types/GoogleCalEvent";
 import { Calculate } from "@mui/icons-material";
 import { fontStyle, fontWeight } from "@mui/system";
+import { Bartender } from "../types/Bartender";
 
 type FormState = {
   $id?: string;
@@ -245,6 +247,29 @@ const EventDetails = (props: propsTypes) => {
       }
     );
   }, [stateApp]);
+
+  const stateBartenders = useAppSelector(
+    (state: any) => state.events.bartenders
+  );
+
+  useEffect(() => {
+    const bartenders = databases.listDocuments(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+      import.meta.env.VITE_APPWRITE_BARTENDERS_COLLECTION_ID, // collectionId - bartenders
+      [Query.orderAsc("firstName")] // queries
+    );
+
+    bartenders.then(
+      function (response: any) {
+        // console.log(response); // Success
+        dispatch(setBartendersList(response.documents));
+        //setCocktails(response.documents);
+      },
+      function (error) {
+        console.log(error); // Failure
+      }
+    );
+  }, []);
 
   useEffect(() => {
     setEvents(stateEvents);
@@ -507,34 +532,91 @@ const EventDetails = (props: propsTypes) => {
                         ` (There is ${allEventsThatDay.length} other event this day)`}
                       {allEventsThatDay.length > 1 &&
                         ` (There are ${allEventsThatDay.length} other events this day)`}
-                      {allEventsThatDay && (
-                        <Grid container>
-                          {allEventsThatDay.map(
-                            (googleCalEvent: GoogleCalEvent, index: number) => {
-                              return (
-                                <Grid
-                                  item
-                                  key={index}
-                                  sx={{
-                                    backgroundColor: "#faf6f6",
-                                    border: "solid 1px var(--teal)",
-                                    borderRadius: "100px",
-                                    padding: "4px 12px",
-                                    margin: "4px",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <a
-                                    href={googleCalEvent.htmlLink}
-                                    target="_blank"
+                      {allEventsThatDay.length > 0 && (
+                        <Grid
+                          container
+                          className="allEventsThatDay"
+                          sx={{
+                            backgroundColor: "#ffffff",
+                            border: "1px solid #dddddd",
+                            borderRadius: "4px",
+                            padding: "4px",
+                          }}
+                        >
+                          <Grid
+                            container
+                            className="googleCalEvents"
+                            sx={{
+                              backgroundColor: "#eaeaea",
+                              border: "1px solid #dddddd",
+                              borderRadius: "4px",
+                              padding: "4px",
+                            }}
+                          >
+                            {allEventsThatDay.map(
+                              (
+                                googleCalEvent: GoogleCalEvent,
+                                index: number
+                              ) => {
+                                return (
+                                  <Grid
+                                    item
+                                    key={index}
+                                    sx={{
+                                      backgroundColor: "#faf6f6",
+                                      border: "solid 1px var(--teal)",
+                                      borderBottomWidth: "4px",
+                                      borderRadius: "8px",
+                                      padding: "4px 12px",
+                                      margin: "4px",
+                                      justifyContent: "center",
+                                      alignItems: "center",
+                                    }}
+                                    className="googleCalEvent"
                                   >
-                                    {googleCalEvent.summary}
-                                  </a>
-                                </Grid>
-                              );
-                            }
-                          )}
+                                    <a
+                                      href={googleCalEvent.htmlLink}
+                                      target="_blank"
+                                    >
+                                      {googleCalEvent.summary}
+                                    </a>
+                                  </Grid>
+                                );
+                              }
+                              //END allEventsThatDay.map
+                            )}
+                          </Grid>
+                          <Grid container>
+                            <Grid item>Bartenders:</Grid>
+                            {stateBartenders &&
+                              stateBartenders.map(
+                                (bartender: Bartender, index: number) => {
+                                  let busyThatDay = _.filter(allEventsThatDay, {
+                                    attendees: [{ email: bartender.email }],
+                                  });
+                                  //console.log("busyThatDay", busyThatDay);
+                                  return (
+                                    <Grid
+                                      item
+                                      key={index}
+                                      sx={{
+                                        border: "1px solid var(--orange)",
+                                        borderRadius: "100px",
+                                        backgroundColor: "var(--orange)",
+                                        margin: "4px",
+                                        padding: "4px 12px",
+                                        color: "#ffffff",
+                                        fontWeight: "700",
+                                        opacity:
+                                          busyThatDay.length > 0 ? ".4" : "1",
+                                      }}
+                                    >
+                                      {bartender.firstName}
+                                    </Grid>
+                                  );
+                                }
+                              )}
+                          </Grid>
                         </Grid>
                       )}
                     </>

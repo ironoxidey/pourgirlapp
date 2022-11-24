@@ -27,13 +27,13 @@ import { Cocktail } from "../types/Cocktail";
 // };
 
 type CocktailsListState = {
-  cocktails: Cocktail[];
-  public: Cocktail[];
+  cocktails?: Cocktail[];
+  public?: Cocktail[];
 };
 
 const initialState: CocktailsListState = {
-  cocktails: [],
-  public: [],
+  //cocktails: [],
+  //public: [],
 };
 
 //This was really helpful when setting this up: https://redux-toolkit.js.org/usage/usage-with-typescript

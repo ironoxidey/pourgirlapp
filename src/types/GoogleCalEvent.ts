@@ -16,6 +16,7 @@ type GoogleCalEvent = {
   status?: string;
   summary?: string;
   updated?: string;
+  attendees?: [];
 };
 
 export type { GoogleCalEvent };

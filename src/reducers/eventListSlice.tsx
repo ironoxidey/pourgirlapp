@@ -2,17 +2,20 @@
 import { MicExternalOff, PlaylistAddOutlined } from "@mui/icons-material";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Event } from "../types/Event";
+import { Bartender } from "../types/Bartender";
 import { GoogleCalEvent } from "../types/GoogleCalEvent";
 
 type EventsListState = {
-  events: Event[];
-  googleCalEvents: GoogleCalEvent[];
-  theEvent: Event;
+  events?: Event[];
+  bartenders?: Bartender[];
+  googleCalEvents?: GoogleCalEvent[];
+  theEvent?: Event;
 };
 
 const initialState: EventsListState = {
-  events: [],
-  googleCalEvents: [],
+  //events: [],
+  //bartenders: [],
+  //googleCalEvents: [],
   theEvent: {},
 };
 
@@ -47,6 +50,9 @@ export const eventListSlice = createSlice({
 
       // 	return cocktail;
       // });
+    },
+    setBartendersList: (state, action: PayloadAction<Bartender[]>) => {
+      state.bartenders = action.payload;
     },
     setGoogleCalEventsList: (
       state,
@@ -83,7 +89,11 @@ export const eventListSlice = createSlice({
   },
 });
 
-export const { setEventsList, setGoogleCalEventsList, setTheEvent } =
-  eventListSlice.actions;
+export const {
+  setEventsList,
+  setBartendersList,
+  setGoogleCalEventsList,
+  setTheEvent,
+} = eventListSlice.actions;
 
 export default eventListSlice.reducer;
