@@ -43,6 +43,7 @@ import { GoogleCalEvent } from "../types/GoogleCalEvent";
 import { Calculate } from "@mui/icons-material";
 import { fontStyle, fontWeight } from "@mui/system";
 import { Bartender } from "../types/Bartender";
+import BartenderDisplay from "./BartenderDisplay";
 
 type FormState = {
   $id?: string;
@@ -280,14 +281,37 @@ const EventDetails = (props: propsTypes) => {
       //pulls all the numbers from stateTheEvent.barHours into an array
       const barHoursNumbers: number[] =
         stateTheEvent.barHours.match(/^\d+|\d+\b|\d+(?=\w)/g);
+      console.log("EventDetails barHoursNumbers", barHoursNumbers);
       //pulls the first number [0] from stateTheEvent.barHours
-      const barOpenAt: number = barHoursNumbers[0];
+      const barOpenAt: number =
+        barHoursNumbers[0].toString().length < 3 //where people put in 330 to 730
+          ? Number(barHoursNumbers[0])
+          : Number(barHoursNumbers[0].toString().slice(0, -2));
       //pulls the second number [1] from stateTheEvent.barHours IF it's greater than 0 and less than 13, because sometimes someone enters 4:00 - 6:00 and the match regex considers the 00 the second number
+
       const barCloseAt: number =
-        barHoursNumbers[1] > 0 && barHoursNumbers[1] < 13
-          ? barHoursNumbers[1]
-          : barHoursNumbers[2];
-      setNumBarHours(barCloseAt - barOpenAt);
+        barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
+        barHoursNumbers[barHoursNumbers.length - 1] < 13 &&
+        barHoursNumbers[barHoursNumbers.length - 1].toString().length < 3
+          ? Number(barHoursNumbers[barHoursNumbers.length - 1])
+          : barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
+            barHoursNumbers[barHoursNumbers.length - 1].toString().length >= 3 //where people put in 330 to 730
+          ? Number(
+              barHoursNumbers[barHoursNumbers.length - 1]
+                .toString()
+                .slice(0, -2)
+            )
+          : Number(barHoursNumbers[2]);
+      if (Number(barOpenAt) > Number(barCloseAt)) {
+        //if it's like 11am to 2pm
+        let barHoursAmount: number = 0;
+        barHoursAmount += 12 - Number(barOpenAt);
+        barHoursAmount += Number(barCloseAt);
+        setNumBarHours(barHoursAmount);
+        console.log("barHoursAmount", barHoursAmount);
+      } else {
+        setNumBarHours(Number(barCloseAt) - Number(barOpenAt));
+      }
     }
 
     if (stateTheEvent.when) {
@@ -399,7 +423,7 @@ const EventDetails = (props: propsTypes) => {
                   }}
                   renderOption={(props, option, { selected }) => (
                     <li {...props}>
-                      <Tooltip
+                      {/* <Tooltip
                         arrow={true}
                         placement="bottom-start"
                         title={
@@ -407,18 +431,18 @@ const EventDetails = (props: propsTypes) => {
                             <div></div>
                           </>
                         }
-                      >
-                        <Grid container alignItems="center">
-                          <Typography
-                            sx={{
-                              margin: "0 4px",
-                            }}
-                          >
-                            {option.whenString} — {option.name} — {option.where}{" "}
-                            — {option.eventKind}
-                          </Typography>
-                        </Grid>
-                      </Tooltip>
+                      > */}
+                      <Grid container alignItems="center">
+                        <Typography
+                          sx={{
+                            margin: "0 4px",
+                          }}
+                        >
+                          {option.whenString} — {option.name} — {option.where} —{" "}
+                          {option.eventKind}
+                        </Typography>
+                      </Grid>
+                      {/* </Tooltip> */}
                     </li>
                   )}
                   renderInput={(params: any) => (
@@ -587,7 +611,15 @@ const EventDetails = (props: propsTypes) => {
                             )}
                           </Grid>
                           <Grid container>
-                            <Grid item>Bartenders:</Grid>
+                            <Grid
+                              item
+                              sx={{
+                                margin: "4px",
+                                padding: "4px 0",
+                              }}
+                            >
+                              Bartenders:
+                            </Grid>
                             {stateBartenders &&
                               stateBartenders.map(
                                 (bartender: Bartender, index: number) => {
@@ -596,23 +628,11 @@ const EventDetails = (props: propsTypes) => {
                                   });
                                   //console.log("busyThatDay", busyThatDay);
                                   return (
-                                    <Grid
-                                      item
+                                    <BartenderDisplay
                                       key={index}
-                                      sx={{
-                                        border: "1px solid var(--orange)",
-                                        borderRadius: "100px",
-                                        backgroundColor: "var(--orange)",
-                                        margin: "4px",
-                                        padding: "4px 12px",
-                                        color: "#ffffff",
-                                        fontWeight: "700",
-                                        opacity:
-                                          busyThatDay.length > 0 ? ".4" : "1",
-                                      }}
-                                    >
-                                      {bartender.firstName}
-                                    </Grid>
+                                      bartender={bartender}
+                                      busyThatDay={busyThatDay}
+                                    ></BartenderDisplay>
                                   );
                                 }
                               )}
