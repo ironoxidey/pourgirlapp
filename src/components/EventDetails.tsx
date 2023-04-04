@@ -234,12 +234,12 @@ const EventDetails = (props: propsTypes) => {
     const typeformEvents = databases.listDocuments(
       import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
       import.meta.env.VITE_APPWRITE_TYPEFORM_EVENTS_COLLECTION_ID, // collectionId - typeformEvents
-      [Query.orderDesc("$createdAt")] // queries
+      [Query.orderDesc("$createdAt"), Query.limit(100)] // queries
     );
 
     typeformEvents.then(
       function (response: any) {
-        // console.log(response); // Success
+        //console.log("typeformEvents: ", response.documents); // Success
         dispatch(setEventsList(response.documents));
         //setCocktails(response.documents);
       },
@@ -282,35 +282,70 @@ const EventDetails = (props: propsTypes) => {
       const barHoursNumbers: number[] =
         stateTheEvent.barHours.match(/^\d+|\d+\b|\d+(?=\w)/g);
       console.log("EventDetails barHoursNumbers", barHoursNumbers);
-      //pulls the first number [0] from stateTheEvent.barHours
-      const barOpenAt: number =
-        barHoursNumbers[0].toString().length < 3 //where people put in 330 to 730
-          ? Number(barHoursNumbers[0])
-          : Number(barHoursNumbers[0].toString().slice(0, -2));
-      //pulls the second number [1] from stateTheEvent.barHours IF it's greater than 0 and less than 13, because sometimes someone enters 4:00 - 6:00 and the match regex considers the 00 the second number
+      if (barHoursNumbers) {
+        //pulls the first number [0] from stateTheEvent.barHours
+        let barOpenAt: number =
+          barHoursNumbers[0].toString().length < 3 //where people put in 330 to 730
+            ? Number(barHoursNumbers[0])
+            : Number(barHoursNumbers[0].toString().slice(0, -2)) +
+              Number(barHoursNumbers[0].toString().slice(-2)) / 60;
 
-      const barCloseAt: number =
-        barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
-        barHoursNumbers[barHoursNumbers.length - 1] < 13 &&
-        barHoursNumbers[barHoursNumbers.length - 1].toString().length < 3
-          ? Number(barHoursNumbers[barHoursNumbers.length - 1])
-          : barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
-            barHoursNumbers[barHoursNumbers.length - 1].toString().length >= 3 //where people put in 330 to 730
-          ? Number(
-              barHoursNumbers[barHoursNumbers.length - 1]
-                .toString()
-                .slice(0, -2)
-            )
-          : Number(barHoursNumbers[2]);
-      if (Number(barOpenAt) > Number(barCloseAt)) {
-        //if it's like 11am to 2pm
-        let barHoursAmount: number = 0;
-        barHoursAmount += 12 - Number(barOpenAt);
-        barHoursAmount += Number(barCloseAt);
-        setNumBarHours(barHoursAmount);
-        console.log("barHoursAmount", barHoursAmount);
+        if (
+          barHoursNumbers[1].toString().length === 2 &&
+          barHoursNumbers[1] > 12
+        ) {
+          //if the second number looks like minutes (double digits greater than 12)
+          barOpenAt += Number(barHoursNumbers[1]) / 60;
+        }
+
+        //pulls the second number [1] from stateTheEvent.barHours IF it's greater than 0 and less than 13, because sometimes someone enters 4:00 - 6:00 and the match regex considers the 00 the second number
+        let barCloseAt: number =
+          barHoursNumbers[1] > 0 &&
+          barHoursNumbers[1] < 13 &&
+          barHoursNumbers[1].toString().length < 3
+            ? Number(barHoursNumbers[1])
+            : barHoursNumbers[1] > 0 &&
+              barHoursNumbers[1].toString().length >= 3 //where people put in 330 to 730
+            ? Number(barHoursNumbers[1].toString().slice(0, -2)) +
+              Number(barHoursNumbers[1].toString().slice(-2)) / 60
+            : barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
+              barHoursNumbers[barHoursNumbers.length - 1] < 13 &&
+              barHoursNumbers[barHoursNumbers.length - 1].toString().length < 3
+            ? Number(barHoursNumbers[barHoursNumbers.length - 1])
+            : barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
+              barHoursNumbers[barHoursNumbers.length - 1].toString().length >= 3 //where people put in 330 to 730
+            ? Number(
+                barHoursNumbers[barHoursNumbers.length - 1]
+                  .toString()
+                  .slice(0, -2)
+              ) +
+              Number(
+                barHoursNumbers[barHoursNumbers.length - 1].toString().slice(-2)
+              ) /
+                60
+            : Number(barHoursNumbers[2]);
+
+        if (
+          barHoursNumbers[barHoursNumbers.length - 1].toString().length === 2 &&
+          barHoursNumbers[barHoursNumbers.length - 1] > 12
+        ) {
+          //if the last number looks like minutes (double digits greater than 12)
+          barCloseAt +=
+            Number(barHoursNumbers[barHoursNumbers.length - 1]) / 60;
+        }
+
+        if (Number(barOpenAt) > Number(barCloseAt)) {
+          //if it's like 11am to 2pm
+          let barHoursAmount: number = 0;
+          barHoursAmount += 12 - Number(barOpenAt);
+          barHoursAmount += Number(barCloseAt);
+          setNumBarHours(barHoursAmount);
+          console.log("barHoursAmount", barHoursAmount);
+        } else {
+          setNumBarHours(Number(barCloseAt) - Number(barOpenAt));
+        }
       } else {
-        setNumBarHours(Number(barCloseAt) - Number(barOpenAt));
+        setNumBarHours(-1);
       }
     }
 
