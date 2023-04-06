@@ -1,5 +1,5 @@
 import React, { useEffect, useState, FormEvent } from "react";
-import PropTypes from "prop-types";
+// import PropTypes from "prop-types";
 import { account, databases } from "../appwrite/appwriteConfig";
 import { Query } from "appwrite";
 import { Formik, Form } from "formik";
@@ -44,6 +44,8 @@ import { Calculate } from "@mui/icons-material";
 import { fontStyle, fontWeight } from "@mui/system";
 import { Bartender } from "../types/Bartender";
 import BartenderDisplay from "./BartenderDisplay";
+
+import DraftQuote from "./DraftQuote";
 
 type FormState = {
   $id?: string;
@@ -225,6 +227,8 @@ const EventDetails = (props: propsTypes) => {
   const stateTheEvent = useAppSelector((state: any) => state.events.theEvent);
 
   const [numBarHours, setNumBarHours] = useState<number>();
+  const [barOpensAt, setBarOpensAt] = useState<number>();
+  const [barClosesAt, setBarClosesAt] = useState<number>();
 
   const handleOnChange = useDebouncedCallback((theEvent: Event) => {
     dispatch(setTheEvent(theEvent));
@@ -276,6 +280,9 @@ const EventDetails = (props: propsTypes) => {
     setEvents(stateEvents);
   }, [stateEvents]);
 
+  let barOpenAt: number;
+  let barCloseAt: number;
+
   useEffect(() => {
     if (stateTheEvent.barHours) {
       //pulls all the numbers from stateTheEvent.barHours into an array
@@ -284,7 +291,7 @@ const EventDetails = (props: propsTypes) => {
       console.log("EventDetails barHoursNumbers", barHoursNumbers);
       if (barHoursNumbers) {
         //pulls the first number [0] from stateTheEvent.barHours
-        let barOpenAt: number =
+        barOpenAt =
           barHoursNumbers[0].toString().length < 3 //where people put in 330 to 730
             ? Number(barHoursNumbers[0])
             : Number(barHoursNumbers[0].toString().slice(0, -2)) +
@@ -299,7 +306,7 @@ const EventDetails = (props: propsTypes) => {
         }
 
         //pulls the second number [1] from stateTheEvent.barHours IF it's greater than 0 and less than 13, because sometimes someone enters 4:00 - 6:00 and the match regex considers the 00 the second number
-        let barCloseAt: number =
+        barCloseAt =
           barHoursNumbers[1] > 0 &&
           barHoursNumbers[1] < 13 &&
           barHoursNumbers[1].toString().length < 3
@@ -348,6 +355,8 @@ const EventDetails = (props: propsTypes) => {
         setNumBarHours(-1);
       }
     }
+    setBarOpensAt(barOpenAt);
+    setBarClosesAt(barCloseAt);
 
     if (stateTheEvent.when) {
       const theEventDate = new Date(stateTheEvent.when).toLocaleString(
@@ -500,394 +509,425 @@ const EventDetails = (props: propsTypes) => {
                 <Grid
                   container
                   sx={{
-                    justifyContent: "space-around",
-                    flexDirection: "column",
+                    justifyContent: "center",
+                    flexDirection: "row",
                     margin: "20px auto",
-                    textAlign: "left",
-                    maxWidth: "1024px",
-                    width: "80%",
+                    maxWidth: "100%",
+                    width: "100%",
                   }}
-                  className="eventDetails"
+                  className="eventDetailsWrapper"
                 >
-                  {stateTheEvent.name && (
-                    <Grid item>
-                      <Typography>
-                        <span
-                          className="keyHeading"
-                          style={{ fontWeight: "bold" }}
-                        >
-                          Name:
-                        </span>{" "}
-                        {stateTheEvent.name}
-                      </Typography>
-                    </Grid>
-                  )}
-
-                  {stateTheEvent.email && (
-                    <Grid item>
-                      <Typography>
-                        <span
-                          className="keyHeading"
-                          style={{ fontWeight: "bold" }}
-                        >
-                          Email:
-                        </span>{" "}
-                        {stateTheEvent.email}
-                      </Typography>
-                    </Grid>
-                  )}
-
-                  {stateTheEvent.phone && (
-                    <Grid item>
-                      <Typography>
-                        <span
-                          className="keyHeading"
-                          style={{ fontWeight: "bold" }}
-                        >
-                          Phone:
-                        </span>{" "}
-                        {stateTheEvent.phone}
-                      </Typography>
-                    </Grid>
-                  )}
-
-                  {stateTheEvent.eventKind && (
-                    <Grid item>
-                      <Typography>
-                        <span
-                          className="keyHeading"
-                          style={{ fontWeight: "bold" }}
-                        >
-                          Event Kind:
-                        </span>{" "}
-                        {stateTheEvent.eventKind}
-                      </Typography>
-                    </Grid>
-                  )}
-
-                  {stateTheEvent.when && (
-                    <>
+                  <Grid
+                    item
+                    container
+                    sx={{
+                      justifyContent: "start",
+                      flexDirection: "column",
+                      margin: "20px",
+                      textAlign: "left",
+                      maxWidth: "450px",
+                      width: "40%",
+                    }}
+                    className="eventDetails"
+                  >
+                    {stateTheEvent.name && (
                       <Grid item>
                         <Typography>
                           <span
                             className="keyHeading"
                             style={{ fontWeight: "bold" }}
                           >
-                            When:
+                            Name:
                           </span>{" "}
-                          {new Date(stateTheEvent.when).toLocaleDateString(
-                            "en-US",
-                            {
-                              timeZone: "UTC",
-                              weekday: "long",
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            }
-                          )}
+                          {stateTheEvent.name}
                         </Typography>
                       </Grid>
-                      {allEventsThatDay.length === 1 &&
-                        ` (There is ${allEventsThatDay.length} other event this day)`}
-                      {allEventsThatDay.length > 1 &&
-                        ` (There are ${allEventsThatDay.length} other events this day)`}
-                      {allEventsThatDay.length > 0 && (
-                        <Grid
-                          container
-                          className="allEventsThatDay"
-                          sx={{
-                            backgroundColor: "#ffffff",
-                            border: "1px solid #dddddd",
-                            borderRadius: "4px",
-                            padding: "4px",
-                          }}
-                        >
+                    )}
+
+                    {stateTheEvent.email && (
+                      <Grid item>
+                        <Typography>
+                          <span
+                            className="keyHeading"
+                            style={{ fontWeight: "bold" }}
+                          >
+                            Email:
+                          </span>{" "}
+                          {stateTheEvent.email}
+                        </Typography>
+                      </Grid>
+                    )}
+
+                    {stateTheEvent.phone && (
+                      <Grid item>
+                        <Typography>
+                          <span
+                            className="keyHeading"
+                            style={{ fontWeight: "bold" }}
+                          >
+                            Phone:
+                          </span>{" "}
+                          {stateTheEvent.phone}
+                        </Typography>
+                      </Grid>
+                    )}
+
+                    {stateTheEvent.eventKind && (
+                      <Grid item>
+                        <Typography>
+                          <span
+                            className="keyHeading"
+                            style={{ fontWeight: "bold" }}
+                          >
+                            Event Kind:
+                          </span>{" "}
+                          {stateTheEvent.eventKind}
+                        </Typography>
+                      </Grid>
+                    )}
+
+                    {stateTheEvent.when && (
+                      <>
+                        <Grid item>
+                          <Typography>
+                            <span
+                              className="keyHeading"
+                              style={{ fontWeight: "bold" }}
+                            >
+                              When:
+                            </span>{" "}
+                            {new Date(stateTheEvent.when).toLocaleDateString(
+                              "en-US",
+                              {
+                                timeZone: "UTC",
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )}
+                          </Typography>
+                        </Grid>
+                        {allEventsThatDay.length === 1 &&
+                          ` (There is ${allEventsThatDay.length} other event this day)`}
+                        {allEventsThatDay.length > 1 &&
+                          ` (There are ${allEventsThatDay.length} other events this day)`}
+                        {allEventsThatDay.length > 0 && (
                           <Grid
                             container
-                            className="googleCalEvents"
+                            className="allEventsThatDay"
                             sx={{
-                              backgroundColor: "#eaeaea",
+                              backgroundColor: "#ffffff",
                               border: "1px solid #dddddd",
                               borderRadius: "4px",
                               padding: "4px",
                             }}
                           >
-                            {allEventsThatDay.map(
-                              (
-                                googleCalEvent: GoogleCalEvent,
-                                index: number
-                              ) => {
-                                return (
-                                  <Grid
-                                    item
-                                    key={index}
-                                    sx={{
-                                      backgroundColor: "#faf6f6",
-                                      border: "solid 1px var(--teal)",
-                                      borderBottomWidth: "4px",
-                                      borderRadius: "8px",
-                                      padding: "4px 12px",
-                                      margin: "4px",
-                                      justifyContent: "center",
-                                      alignItems: "center",
-                                    }}
-                                    className="googleCalEvent"
-                                  >
-                                    <a
-                                      href={googleCalEvent.htmlLink}
-                                      target="_blank"
-                                    >
-                                      {googleCalEvent.summary}
-                                    </a>
-                                  </Grid>
-                                );
-                              }
-                              //END allEventsThatDay.map
-                            )}
-                          </Grid>
-                          <Grid container>
                             <Grid
-                              item
+                              container
+                              className="googleCalEvents"
                               sx={{
-                                margin: "4px",
-                                padding: "4px 0",
+                                backgroundColor: "#eaeaea",
+                                border: "1px solid #dddddd",
+                                borderRadius: "4px",
+                                padding: "4px",
                               }}
                             >
-                              Bartenders:
-                            </Grid>
-                            {stateBartenders &&
-                              stateBartenders.map(
-                                (bartender: Bartender, index: number) => {
-                                  let busyThatDay = _.filter(allEventsThatDay, {
-                                    attendees: [{ email: bartender.email }],
-                                  });
-                                  //console.log("busyThatDay", busyThatDay);
+                              {allEventsThatDay.map(
+                                (
+                                  googleCalEvent: GoogleCalEvent,
+                                  index: number
+                                ) => {
                                   return (
-                                    <BartenderDisplay
+                                    <Grid
+                                      item
                                       key={index}
-                                      bartender={bartender}
-                                      busyThatDay={busyThatDay}
-                                    ></BartenderDisplay>
+                                      sx={{
+                                        backgroundColor: "#faf6f6",
+                                        border: "solid 1px var(--teal)",
+                                        borderBottomWidth: "4px",
+                                        borderRadius: "8px",
+                                        padding: "4px 12px",
+                                        margin: "4px",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                      }}
+                                      className="googleCalEvent"
+                                    >
+                                      <a
+                                        href={googleCalEvent.htmlLink}
+                                        target="_blank"
+                                      >
+                                        {googleCalEvent.summary}
+                                      </a>
+                                    </Grid>
                                   );
                                 }
+                                //END allEventsThatDay.map
                               )}
+                            </Grid>
+                            <Grid container>
+                              <Grid
+                                item
+                                sx={{
+                                  margin: "4px",
+                                  padding: "4px 0",
+                                }}
+                              >
+                                Bartenders:
+                              </Grid>
+                              {stateBartenders &&
+                                stateBartenders.map(
+                                  (bartender: Bartender, index: number) => {
+                                    let busyThatDay = _.filter(
+                                      allEventsThatDay,
+                                      {
+                                        attendees: [{ email: bartender.email }],
+                                      }
+                                    );
+                                    //console.log("busyThatDay", busyThatDay);
+                                    return (
+                                      <BartenderDisplay
+                                        key={index}
+                                        bartender={bartender}
+                                        busyThatDay={busyThatDay}
+                                      ></BartenderDisplay>
+                                    );
+                                  }
+                                )}
+                            </Grid>
                           </Grid>
-                        </Grid>
-                      )}
-                    </>
-                  )}
+                        )}
+                      </>
+                    )}
 
-                  {stateTheEvent.where && (
-                    <Grid container flexDirection="row">
-                      <Grid item>
-                        <Typography
-                          className="keyHeading"
-                          style={{
-                            fontWeight: "bold",
-                            display: "inline",
-                            marginRight: "4px",
+                    {stateTheEvent.where && (
+                      <Grid container flexDirection="row">
+                        <Grid item>
+                          <Typography
+                            className="keyHeading"
+                            style={{
+                              fontWeight: "bold",
+                              display: "inline",
+                              marginRight: "4px",
+                            }}
+                          >
+                            Where:
+                          </Typography>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={10}
+                          sx={{
+                            width: "auto",
+                            maxWidth: "100%",
+                            marginTop: "-3px",
                           }}
                         >
-                          Where:
-                        </Typography>
+                          <TextFieldWrapper
+                            name="where"
+                            placeholder="Where"
+                            value={values.where || stateTheEvent.where || ""}
+                            onChange={(value: number) =>
+                              setFieldValue(
+                                "where",
+                                value !== null ? value : stateTheEvent.where
+                              )
+                            }
+                          />
+                        </Grid>
                       </Grid>
-                      <Grid
-                        item
-                        xs={10}
-                        sx={{
-                          width: "auto",
-                          maxWidth: "100%",
-                          marginTop: "-3px",
-                        }}
-                      >
-                        <TextFieldWrapper
-                          name="where"
-                          placeholder="Where"
-                          value={values.where || stateTheEvent.where || ""}
-                          onChange={(value: number) =>
-                            setFieldValue(
-                              "where",
-                              value !== null ? value : stateTheEvent.where
-                            )
-                          }
-                        />
-                      </Grid>
-                    </Grid>
-                  )}
+                    )}
 
-                  {stateTheEvent.guestCount && (
-                    <Grid item>
-                      <Typography>
-                        <span
-                          className="keyHeading"
-                          style={{ fontWeight: "bold" }}
-                        >
-                          Guest Count:
-                        </span>{" "}
-                        {stateTheEvent.guestCount}
-                      </Typography>
-                    </Grid>
-                  )}
-
-                  {stateTheEvent.barHours && numBarHours && (
-                    <>
+                    {stateTheEvent.guestCount && (
                       <Grid item>
                         <Typography>
                           <span
                             className="keyHeading"
                             style={{ fontWeight: "bold" }}
                           >
-                            Bar Hours:
+                            Guest Count:
                           </span>{" "}
-                          {stateTheEvent.barHours}
-                          {" ("}
-                          {numBarHours}
-                          {` hour${numBarHours && numBarHours > 1 ? "s" : ""})`}
-                        </Typography>
-                      </Grid>
-                      {/* <Grid container flexDirection="row" className="barOpen">
-                        <Grid item>
-                          <Typography
-                            className="keyHeading"
-                            style={{
-                              fontWeight: "bold",
-                              display: "inline",
-                              marginRight: "4px",
-                            }}
-                          >
-                            Bar Open:
-                          </Typography>
-                        </Grid>
-                        <Grid item sx={{ maxWidth: "100%", marginTop: "-3px" }}>
-                          <TextFieldWrapper
-                            name="barOpen"
-                            placeholder="Bar Open"
-                            value={
-                              values.barOpen ||
-                              stateTheEvent.barHours.match(
-                                /^\d+|\d+\b|\d+(?=\w)/g
-                              )[0] ||
-                              ""
-                            }
-                            onChange={(value: number) =>
-                              setFieldValue(
-                                "barOpen",
-                                value !== null ? value : stateTheEvent.barHours
-                              )
-                            }
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid container flexDirection="row" className="barClose">
-                        <Grid item>
-                          <Typography
-                            className="keyHeading"
-                            style={{
-                              fontWeight: "bold",
-                              display: "inline",
-                              marginRight: "4px",
-                            }}
-                          >
-                            Bar Close:
-                          </Typography>
-                        </Grid>
-                        <Grid item sx={{ maxWidth: "100%", marginTop: "-3px" }}>
-                          <TextFieldWrapper
-                            name="barClose"
-                            placeholder="Bar Close"
-                            value={
-                              values.barClose ||
-                              stateTheEvent.barHours.match(
-                                /^\d+|\d+\b|\d+(?=\w)/g
-                              )[1] ||
-                              ""
-                            }
-                            onChange={(value: number) =>
-                              setFieldValue(
-                                "barClose",
-                                value !== null ? value : stateTheEvent.barHours
-                              )
-                            }
-                          />
-                        </Grid>
-                      </Grid> */}
-                      <Grid
-                        container
-                        flexDirection="row"
-                        className="servingSuggestion"
-                      >
-                        <Grid item>
-                          <Typography
-                            className="keyHeading"
-                            style={{
-                              fontWeight: "bold",
-                              display: "inline",
-                              marginRight: "4px",
-                            }}
-                          >
-                            We suggest serving:
-                          </Typography>
-                          {stateTheEvent.guestCount * numBarHours} drinks
-                        </Grid>
-                      </Grid>
-                    </>
-                  )}
-
-                  {stateTheEvent.extraStuff &&
-                    stateTheEvent.extraStuff.length > 0 && (
-                      <Grid item>
-                        <Typography>
-                          <span
-                            className="keyHeading"
-                            style={{ fontWeight: "bold" }}
-                          >
-                            Extra Stuff:
-                          </span>{" "}
-                          {stateTheEvent.extraStuff.join(", ")}
+                          {stateTheEvent.guestCount}
                         </Typography>
                       </Grid>
                     )}
 
-                  {stateTheEvent.extraNotes && (
-                    <Grid item>
-                      <Typography>
-                        <span
-                          className="keyHeading"
-                          style={{ fontWeight: "bold" }}
+                    {stateTheEvent.barHours && numBarHours && (
+                      <>
+                        <Grid item>
+                          <Typography>
+                            <span
+                              className="keyHeading"
+                              style={{ fontWeight: "bold" }}
+                            >
+                              Bar Hours:
+                            </span>{" "}
+                            {stateTheEvent.barHours}
+                            {" ("}
+                            {numBarHours}
+                            {` hour${
+                              numBarHours && numBarHours > 1 ? "s" : ""
+                            })`}
+                          </Typography>
+                        </Grid>
+                        {/* <Grid container flexDirection="row" className="barOpen">
+                          <Grid item>
+                            <Typography
+                              className="keyHeading"
+                              style={{
+                                fontWeight: "bold",
+                                display: "inline",
+                                marginRight: "4px",
+                              }}
+                            >
+                              Bar Open:
+                            </Typography>
+                          </Grid>
+                          <Grid item sx={{ maxWidth: "100%", marginTop: "-3px" }}>
+                            <TextFieldWrapper
+                              name="barOpen"
+                              placeholder="Bar Open"
+                              value={
+                                values.barOpen ||
+                                stateTheEvent.barHours.match(
+                                  /^\d+|\d+\b|\d+(?=\w)/g
+                                )[0] ||
+                                ""
+                              }
+                              onChange={(value: number) =>
+                                setFieldValue(
+                                  "barOpen",
+                                  value !== null ? value : stateTheEvent.barHours
+                                )
+                              }
+                            />
+                          </Grid>
+                        </Grid>
+                        <Grid container flexDirection="row" className="barClose">
+                          <Grid item>
+                            <Typography
+                              className="keyHeading"
+                              style={{
+                                fontWeight: "bold",
+                                display: "inline",
+                                marginRight: "4px",
+                              }}
+                            >
+                              Bar Close:
+                            </Typography>
+                          </Grid>
+                          <Grid item sx={{ maxWidth: "100%", marginTop: "-3px" }}>
+                            <TextFieldWrapper
+                              name="barClose"
+                              placeholder="Bar Close"
+                              value={
+                                values.barClose ||
+                                stateTheEvent.barHours.match(
+                                  /^\d+|\d+\b|\d+(?=\w)/g
+                                )[1] ||
+                                ""
+                              }
+                              onChange={(value: number) =>
+                                setFieldValue(
+                                  "barClose",
+                                  value !== null ? value : stateTheEvent.barHours
+                                )
+                              }
+                            />
+                          </Grid>
+                        </Grid> */}
+                        <Grid
+                          container
+                          flexDirection="row"
+                          className="servingSuggestion"
                         >
-                          Extra Notes:
-                        </span>{" "}
-                        {stateTheEvent.extraNotes}
-                      </Typography>
-                    </Grid>
-                  )}
+                          <Grid item>
+                            <Typography
+                              className="keyHeading"
+                              style={{
+                                fontWeight: "bold",
+                                display: "inline",
+                                marginRight: "4px",
+                              }}
+                            >
+                              We suggest serving:
+                            </Typography>
+                            {stateTheEvent.guestCount * numBarHours} drinks
+                          </Grid>
+                        </Grid>
+                      </>
+                    )}
 
-                  {stateTheEvent.$createdAt && (
-                    <Grid item>
-                      <Typography>
-                        <span
-                          className="keyHeading"
-                          style={{ fontWeight: "bold", color: "var(--gray)" }}
-                        >
-                          Inquired On:
-                        </span>{" "}
-                        <span style={{ color: "var(--gray)" }}>
-                          {new Date(
-                            stateTheEvent.$createdAt
-                          ).toLocaleDateString("en-US", {
-                            timeZone: "UTC",
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}{" "}
-                          {new Date(
-                            stateTheEvent.$createdAt
-                          ).toLocaleTimeString("en-US")}
-                        </span>
-                      </Typography>
-                    </Grid>
-                  )}
+                    {stateTheEvent.extraStuff &&
+                      stateTheEvent.extraStuff.length > 0 && (
+                        <Grid item>
+                          <Typography>
+                            <span
+                              className="keyHeading"
+                              style={{ fontWeight: "bold" }}
+                            >
+                              Extra Stuff:
+                            </span>{" "}
+                            {stateTheEvent.extraStuff.join(", ")}
+                          </Typography>
+                        </Grid>
+                      )}
+
+                    {stateTheEvent.extraNotes && (
+                      <Grid item>
+                        <Typography>
+                          <span
+                            className="keyHeading"
+                            style={{ fontWeight: "bold" }}
+                          >
+                            Extra Notes:
+                          </span>{" "}
+                          {stateTheEvent.extraNotes}
+                        </Typography>
+                      </Grid>
+                    )}
+
+                    {stateTheEvent.$createdAt && (
+                      <Grid item>
+                        <Typography>
+                          <span
+                            className="keyHeading"
+                            style={{ fontWeight: "bold", color: "var(--gray)" }}
+                          >
+                            Inquired On:
+                          </span>{" "}
+                          <span style={{ color: "var(--gray)" }}>
+                            {new Date(
+                              stateTheEvent.$createdAt
+                            ).toLocaleDateString("en-US", {
+                              timeZone: "UTC",
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}{" "}
+                            {new Date(
+                              stateTheEvent.$createdAt
+                            ).toLocaleTimeString("en-US")}
+                          </span>
+                        </Typography>
+                      </Grid>
+                    )}
+                  </Grid>
+                  <Grid
+                    item
+                    container
+                    className="draftQuote"
+                    sx={{ maxWidth: "980px", width: "60%", margin: "20px" }}
+                  >
+                    <DraftQuote
+                      {...stateTheEvent}
+                      barOpenAt={barOpensAt}
+                      barCloseAt={barClosesAt}
+                      numBarHours={numBarHours}
+                    ></DraftQuote>
+                  </Grid>
                 </Grid>
               </>
             )}
