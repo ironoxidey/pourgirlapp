@@ -32,133 +32,143 @@ type propsTypes = {
   barOpenAt?: number;
   barCloseAt?: number;
   numBarHours?: number;
+  packageTitle?: string;
+  packagePrice?: number;
+  numBartenders?: number;
+  numBarbacks?: number;
+  numSetupHours?: number;
+  numCleanupHours?: number;
+  arriveAt?: string;
+  leaveAt?: string;
+  guestRange?: string;
+  numTotalHours?: number;
 };
 
 const DraftQuote = (props: propsTypes) => {
-  const [packageTitle, setPackageTitle] = useState<string>();
-  const [packagePrice, setPackagePrice] = useState<number>();
-  const [numBartenders, setNumBartenders] = useState<number>();
-  const [numBarbacks, setNumBarbacks] = useState<number>();
-  const [numSetupHours, setNumSetupHours] = useState<number>();
-  const [numCleanupHours, setNumCleanupHours] = useState<number>();
-  const [arriveAt, setArriveAt] = useState<string>();
-  const [leaveAt, setLeaveAt] = useState<string>();
-  const [guestRange, setGuestRange] = useState<string>();
-  const [numTotalHours, setNumTotalHours] = useState<number>();
-  useEffect(() => {
-    if (props) {
-      setPackageTitle("");
-      setPackagePrice(0.0);
-      setNumBartenders(1);
-      setNumBarbacks(0);
-      let calcPrice = 0;
-      let calcSetupHours = 0;
-      let calcCleanupHours = 0;
-      if (props.guestCount) {
-        if (props.guestCount < 51) {
-          if (
-            props.extraStuff &&
-            props.extraStuff.indexOf("Mini Bar (4'x5' portable bar)") > -1
-          ) {
-            calcSetupHours = 2;
-            calcCleanupHours = 1;
-            setPackageTitle("Pretty Penny Plus");
-            setGuestRange("50 or less");
-            calcPrice = 995.0;
-            setNumBartenders(1);
-          } else {
-            calcSetupHours = 2;
-            calcCleanupHours = 0.5;
-            setPackageTitle("Pretty Penny");
-            setGuestRange("50 or less");
-            calcPrice = 895.0;
-            setNumBartenders(1);
-          }
-          if (numBartenders && props.numBarHours && props.numBarHours > 3) {
-            calcPrice += (props.numBarHours - 3) * 75 * numBartenders;
-          }
-          if (numBartenders && props.numBarHours && props.numBarHours < 3) {
-            calcPrice -= (3 - props.numBarHours) * 75 * numBartenders;
-          }
-        } //if (props.guestCount < 51)
-        else if (props.guestCount > 50 && props.guestCount < 101) {
-          calcSetupHours = 2;
-          calcCleanupHours = 0.5;
-          setPackageTitle("Rags to Riches");
-          setGuestRange("50-100");
-          calcPrice = 1895.0;
-          setNumBartenders(2);
-          if (numBartenders && props.numBarHours && props.numBarHours > 5.5) {
-            calcPrice += (props.numBarHours - 5.5) * 75 * numBartenders;
-          }
-          if (numBartenders && props.numBarHours && props.numBarHours < 5.5) {
-            calcPrice -= (5.5 - props.numBarHours) * 75 * numBartenders;
-          }
-        } //else if (props.guestCount > 50 && props.guestCount < 101)
-        else if (props.guestCount > 100 && props.guestCount < 151) {
-          calcSetupHours = 2;
-          calcCleanupHours = 0.5;
-          setPackageTitle("Rags to Riches Plus");
-          setGuestRange("100-150");
-          calcPrice = 2595.0;
-          setNumBartenders(2);
-          setNumBarbacks(1);
-          if (numBartenders && props.numBarHours && props.numBarHours > 5.5) {
-            calcPrice += (props.numBarHours - 5.5) * 75 * numBartenders;
-          }
-          if (numBartenders && props.numBarHours && props.numBarHours < 5.5) {
-            calcPrice -= (5.5 - props.numBarHours) * 75 * numBartenders;
-          }
-        } //else if (props.guestCount > 100 && props.guestCount < 151)
+  //   const [props.packageTitle, setprops.PackageTitle] = useState<string>();
+  //   const [props.packagePrice, setprops.PackagePrice] = useState<number>();
+  //   const [props.numBartenders, setprops.NumBartenders] = useState<number>();
+  //   const [props.numBarbacks, setprops.NumBarbacks] = useState<number>();
+  //   const [props.numSetupHours, setprops.NumSetupHours] = useState<number>();
+  //   const [props.numCleanupHours, setprops.NumCleanupHours] = useState<number>();
+  //   const [props.arriveAt, setprops.ArriveAt] = useState<string>();
+  //   const [props.leaveAt, setprops.LeaveAt] = useState<string>();
+  //   const [props.guestRange, setprops.GuestRange] = useState<string>();
+  //   const [props.numTotalHours, setprops.NumTotalHours] = useState<number>();
+  //   useEffect(() => {
+  //     if (props) {
+  //       setprops.PackageTitle("");
+  //       setprops.PackagePrice(0.0);
+  //       setprops.NumBartenders(1);
+  //       setprops.NumBarbacks(0);
+  //       let calcPrice = 0;
+  //       let calcSetupHours = 0;
+  //       let calcCleanupHours = 0;
+  //       if (props.guestCount) {
+  //         if (props.guestCount < 51) {
+  //           if (
+  //             props.extraStuff &&
+  //             props.extraStuff.indexOf("Mini Bar (4'x5' portable bar)") > -1
+  //           ) {
+  //             calcSetupHours = 2;
+  //             calcCleanupHours = 1;
+  //             setprops.PackageTitle("Pretty Penny Plus");
+  //             setprops.GuestRange("50 or less");
+  //             calcPrice = 995.0;
+  //             setprops.NumBartenders(1);
+  //           } else {
+  //             calcSetupHours = 2;
+  //             calcCleanupHours = 0.5;
+  //             setprops.PackageTitle("Pretty Penny");
+  //             setprops.GuestRange("50 or less");
+  //             calcPrice = 895.0;
+  //             setprops.NumBartenders(1);
+  //           }
+  //           if (props.numBartenders && props.numBarHours && props.numBarHours > 3) {
+  //             calcPrice += (props.numBarHours - 3) * 75 * props.numBartenders;
+  //           }
+  //           if (props.numBartenders && props.numBarHours && props.numBarHours < 3) {
+  //             calcPrice -= (3 - props.numBarHours) * 75 * props.numBartenders;
+  //           }
+  //         } //if (props.guestCount < 51)
+  //         else if (props.guestCount > 50 && props.guestCount < 101) {
+  //           calcSetupHours = 2;
+  //           calcCleanupHours = 0.5;
+  //           setprops.PackageTitle("Rags to Riches");
+  //           setprops.GuestRange("50-100");
+  //           calcPrice = 1895.0;
+  //           setprops.NumBartenders(2);
+  //           if (props.numBartenders && props.numBarHours && props.numBarHours > 5.5) {
+  //             calcPrice += (props.numBarHours - 5.5) * 75 * props.numBartenders;
+  //           }
+  //           if (props.numBartenders && props.numBarHours && props.numBarHours < 5.5) {
+  //             calcPrice -= (5.5 - props.numBarHours) * 75 * props.numBartenders;
+  //           }
+  //         } //else if (props.guestCount > 50 && props.guestCount < 101)
+  //         else if (props.guestCount > 100 && props.guestCount < 151) {
+  //           calcSetupHours = 2;
+  //           calcCleanupHours = 0.5;
+  //           setprops.PackageTitle("Rags to Riches Plus");
+  //           setprops.GuestRange("100-150");
+  //           calcPrice = 2595.0;
+  //           setprops.NumBartenders(2);
+  //           setprops.NumBarbacks(1);
+  //           if (props.numBartenders && props.numBarHours && props.numBarHours > 5.5) {
+  //             calcPrice += (props.numBarHours - 5.5) * 75 * props.numBartenders;
+  //           }
+  //           if (props.numBartenders && props.numBarHours && props.numBarHours < 5.5) {
+  //             calcPrice -= (5.5 - props.numBarHours) * 75 * props.numBartenders;
+  //           }
+  //         } //else if (props.guestCount > 100 && props.guestCount < 151)
 
-        // if (props.extraStuff && props.extraStuff.indexOf("Bar Bella") > -1) {
-        //   calcPrice += 500;
-        // }
+  //         // if (props.extraStuff && props.extraStuff.indexOf("Bar Bella") > -1) {
+  //         //   calcPrice += 500;
+  //         // }
 
-        const arrivalTime =
-          props.barOpenAt && Number(props.barOpenAt) - calcSetupHours;
-        const departureTime =
-          props.barCloseAt && Number(props.barCloseAt) + calcCleanupHours;
+  //         const arrivalTime =
+  //           props.barOpenAt && Number(props.barOpenAt) - calcSetupHours;
+  //         const departureTime =
+  //           props.barCloseAt && Number(props.barCloseAt) + calcCleanupHours;
 
-        setNumTotalHours(
-          props.numBarHours &&
-            props.numBarHours + calcSetupHours + calcCleanupHours
-        );
+  //         setprops.NumTotalHours(
+  //           props.numBarHours &&
+  //             props.numBarHours + calcSetupHours + calcCleanupHours
+  //         );
 
-        setArriveAt(() => {
-          if (arrivalTime && arrivalTime >= 1) {
-            const hours = Number(arrivalTime.toString().split(".")[0]);
-            const minutes =
-              (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
-            const amPM = hours > 9 ? "am" : "pm";
-            return hours + ":" + (minutes || "00") + amPM;
-          } else if ((arrivalTime && arrivalTime < 1) || arrivalTime === 0) {
-            const hours = 12 + Number(arrivalTime.toString().split(".")[0]);
-            const minutes =
-              (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
-            const amPM = hours > 9 && hours != 12 ? "am" : "pm";
-            return hours + ":" + (minutes || "00") + amPM;
-          } else {
-            return;
-          }
-        });
-        setLeaveAt(() => {
-          if (departureTime) {
-            const hours = Number(departureTime.toString().split(".")[0]);
-            const minutes =
-              (Number(departureTime.toString().split(".")[1]) / 10) * 60;
-            const amPM = hours === 12 ? "am" : "pm";
-            return hours + ":" + (minutes || "00") + amPM;
-          } else {
-            return;
-          }
-        });
-        setNumSetupHours(calcSetupHours);
-        setNumCleanupHours(calcCleanupHours);
-        setPackagePrice(calcPrice);
-      } //if (props.guestCount)
-    }
-  }, [props]);
+  //         setprops.ArriveAt(() => {
+  //           if (arrivalTime && arrivalTime >= 1) {
+  //             const hours = Number(arrivalTime.toString().split(".")[0]);
+  //             const minutes =
+  //               (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
+  //             const amPM = hours > 9 ? "am" : "pm";
+  //             return hours + ":" + (minutes || "00") + amPM;
+  //           } else if ((arrivalTime && arrivalTime < 1) || arrivalTime === 0) {
+  //             const hours = 12 + Number(arrivalTime.toString().split(".")[0]);
+  //             const minutes =
+  //               (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
+  //             const amPM = hours > 9 && hours != 12 ? "am" : "pm";
+  //             return hours + ":" + (minutes || "00") + amPM;
+  //           } else {
+  //             return;
+  //           }
+  //         });
+  //         setprops.LeaveAt(() => {
+  //           if (departureTime) {
+  //             const hours = Number(departureTime.toString().split(".")[0]);
+  //             const minutes =
+  //               (Number(departureTime.toString().split(".")[1]) / 10) * 60;
+  //             const amPM = hours === 12 ? "am" : "pm";
+  //             return hours + ":" + (minutes || "00") + amPM;
+  //           } else {
+  //             return;
+  //           }
+  //         });
+  //         setprops.NumSetupHours(calcSetupHours);
+  //         setprops.NumCleanupHours(calcCleanupHours);
+  //         setprops.PackagePrice(calcPrice);
+  //       } //if (props.guestCount)
+  //     }
+  //   }, [props]);
   return (
     <>
       <Grid
@@ -223,35 +233,38 @@ const DraftQuote = (props: propsTypes) => {
         <p>
           <b>
             <em>
-              {packageTitle}: $
-              {(Math.round((packagePrice || 0) * 100) / 100).toFixed(2)}
+              {props.packageTitle}: $
+              {(Math.round((props.packagePrice || 0) * 100) / 100).toFixed(2)}
             </em>
           </b>
         </p>
         <p>
-          This service package, designed for a guest count of {guestRange},
-          includes:
+          This service package, designed for a guest count of {props.guestRange}
+          , includes:
           <ul>
             <li>
-              {numBartenders} Pour Girl Bartender
-              {numBartenders && numBartenders > 1 ? "s" : ""}
-              {numBarbacks && numBarbacks > 0
-                ? ", " + numBarbacks + " Barback" + (numBarbacks > 1 ? "s" : "")
+              {props.numBartenders} Pour Girl Bartender
+              {props.numBartenders && props.numBartenders > 1 ? "s" : ""}
+              {props.numBarbacks && props.numBarbacks > 0
+                ? ", " +
+                  props.numBarbacks +
+                  " Barback" +
+                  (props.numBarbacks > 1 ? "s" : "")
                 : ""}
             </li>
-            {packageTitle === "Rags to Riches" && (
+            {props.packageTitle === "Rags to Riches" && (
               <li>
                 Service for up to two bar locations (additional 0.5 hour setup
                 time will be added for a second bar)
               </li>
             )}
-            {packageTitle === "Rags to Riches Plus" && (
+            {props.packageTitle === "Rags to Riches Plus" && (
               <li>
                 Service for one bar location (additional 0.5 hour setup time
                 will be added for a second bar)
               </li>
             )}
-            {packageTitle === "Pretty Penny Plus" && (
+            {props.packageTitle === "Pretty Penny Plus" && (
               <li>
                 Our{" "}
                 <a href="https://www.instagram.com/p/BpOcUxtAiqN/">
@@ -261,30 +274,35 @@ const DraftQuote = (props: propsTypes) => {
               </li>
             )}
             <li>
-              {numSetupHours} hour
-              {numSetupHours && numSetupHours > 1 ? "s" : ""} set-up &{" "}
-              {props.numBarHours} hour
+              {props.numSetupHours} hour
+              {props.numSetupHours && props.numSetupHours > 1 ? "s" : ""} set-up
+              & {props.numBarHours} hour
               {props.numBarHours && props.numBarHours > 1 ? "s" : ""} of bar
               service,{" "}
-              {numCleanupHours && numCleanupHours < 1
-                ? numCleanupHours * 60 + "-minute "
-                : numCleanupHours + "-hour "}{" "}
-              cleanup ({arriveAt} to {leaveAt} — {numTotalHours} total hours)
+              {props.numCleanupHours && props.numCleanupHours < 1
+                ? props.numCleanupHours * 60 + "-minute "
+                : props.numCleanupHours + "-hour "}{" "}
+              cleanup ({props.arriveAt} to {props.leaveAt} —{" "}
+              {props.numTotalHours} hour total duration)
             </li>
             <li>
               Customized beverage menu & shopping list for your choice of
               signature cocktails, seasonal mocktails, and/or beer and wine
             </li>
             <li>
-              Beverage menu to display on the bar
-              {numBartenders && numBartenders > 1 ? "(s)" : ""}
+              <a href="https://www.instagram.com/p/CUvNRVAPcXi/">
+                Beverage menu
+              </a>{" "}
+              to display on the bar
+              {props.numBartenders && props.numBartenders > 1 ? "(s)" : ""}
             </li>
+            <li>Beverage napkins</li>
             <li>
               Our bar tools (i.e corkscrew, bottle opener, shaker & strainer,
               muddler, bar towel, knife & cutting board, ice bucket & scoop)
             </li>
-            {(packageTitle === "Rags to Riches" ||
-              packageTitle === "Rags to Riches Plus") && (
+            {(props.packageTitle === "Rags to Riches" ||
+              props.packageTitle === "Rags to Riches Plus") && (
               <>
                 <li>
                   All necessary ice chests, coolers, garnish containers &

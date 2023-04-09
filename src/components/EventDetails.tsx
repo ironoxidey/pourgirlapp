@@ -2,7 +2,7 @@ import React, { useEffect, useState, FormEvent } from "react";
 // import PropTypes from "prop-types";
 import { account, databases } from "../appwrite/appwriteConfig";
 import { Query } from "appwrite";
-import { Formik, Form } from "formik";
+import { Formik, Form, useFormikContext } from "formik";
 import _ from "lodash";
 import {
   Grid,
@@ -62,6 +62,20 @@ type FormState = {
   phone?: string;
   extraNotes?: string;
   whenString?: string;
+
+  barOpensAt?: string;
+  barClosesAt?: string;
+  numBarHours?: number;
+  packageTitle?: string;
+  packagePrice?: number;
+  numBartenders?: number;
+  numBarbacks?: number;
+  numSetupHours?: number;
+  numCleanupHours?: number;
+  arriveAt?: string;
+  leaveAt?: string;
+  guestRange?: string;
+  numTotalHours?: number;
 };
 const INITIAL_FORM_STATE: FormState = {
   $id: "",
@@ -78,6 +92,20 @@ const INITIAL_FORM_STATE: FormState = {
   phone: "",
   extraNotes: "",
   whenString: "",
+
+  barOpensAt: "",
+  barClosesAt: "",
+  numBarHours: 0,
+  packageTitle: "",
+  packagePrice: 0,
+  numBartenders: 1,
+  numBarbacks: 0,
+  numSetupHours: 2,
+  numCleanupHours: 0.5,
+  arriveAt: "",
+  leaveAt: "",
+  guestRange: "",
+  numTotalHours: 0,
 };
 
 type propsTypes = {
@@ -284,80 +312,6 @@ const EventDetails = (props: propsTypes) => {
   let barCloseAt: number;
 
   useEffect(() => {
-    if (stateTheEvent.barHours) {
-      //pulls all the numbers from stateTheEvent.barHours into an array
-      const barHoursNumbers: number[] =
-        stateTheEvent.barHours.match(/^\d+|\d+\b|\d+(?=\w)/g);
-      console.log("EventDetails barHoursNumbers", barHoursNumbers);
-      if (barHoursNumbers) {
-        //pulls the first number [0] from stateTheEvent.barHours
-        barOpenAt =
-          barHoursNumbers[0].toString().length < 3 //where people put in 330 to 730
-            ? Number(barHoursNumbers[0])
-            : Number(barHoursNumbers[0].toString().slice(0, -2)) +
-              Number(barHoursNumbers[0].toString().slice(-2)) / 60;
-
-        if (
-          barHoursNumbers[1].toString().length === 2 &&
-          barHoursNumbers[1] > 12
-        ) {
-          //if the second number looks like minutes (double digits greater than 12)
-          barOpenAt += Number(barHoursNumbers[1]) / 60;
-        }
-
-        //pulls the second number [1] from stateTheEvent.barHours IF it's greater than 0 and less than 13, because sometimes someone enters 4:00 - 6:00 and the match regex considers the 00 the second number
-        barCloseAt =
-          barHoursNumbers[1] > 0 &&
-          barHoursNumbers[1] < 13 &&
-          barHoursNumbers[1].toString().length < 3
-            ? Number(barHoursNumbers[1])
-            : barHoursNumbers[1] > 0 &&
-              barHoursNumbers[1].toString().length >= 3 //where people put in 330 to 730
-            ? Number(barHoursNumbers[1].toString().slice(0, -2)) +
-              Number(barHoursNumbers[1].toString().slice(-2)) / 60
-            : barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
-              barHoursNumbers[barHoursNumbers.length - 1] < 13 &&
-              barHoursNumbers[barHoursNumbers.length - 1].toString().length < 3
-            ? Number(barHoursNumbers[barHoursNumbers.length - 1])
-            : barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
-              barHoursNumbers[barHoursNumbers.length - 1].toString().length >= 3 //where people put in 330 to 730
-            ? Number(
-                barHoursNumbers[barHoursNumbers.length - 1]
-                  .toString()
-                  .slice(0, -2)
-              ) +
-              Number(
-                barHoursNumbers[barHoursNumbers.length - 1].toString().slice(-2)
-              ) /
-                60
-            : Number(barHoursNumbers[2]);
-
-        if (
-          barHoursNumbers[barHoursNumbers.length - 1].toString().length === 2 &&
-          barHoursNumbers[barHoursNumbers.length - 1] > 12
-        ) {
-          //if the last number looks like minutes (double digits greater than 12)
-          barCloseAt +=
-            Number(barHoursNumbers[barHoursNumbers.length - 1]) / 60;
-        }
-
-        if (Number(barOpenAt) > Number(barCloseAt)) {
-          //if it's like 11am to 2pm
-          let barHoursAmount: number = 0;
-          barHoursAmount += 12 - Number(barOpenAt);
-          barHoursAmount += Number(barCloseAt);
-          setNumBarHours(barHoursAmount);
-          console.log("barHoursAmount", barHoursAmount);
-        } else {
-          setNumBarHours(Number(barCloseAt) - Number(barOpenAt));
-        }
-      } else {
-        setNumBarHours(-1);
-      }
-    }
-    setBarOpensAt(barOpenAt);
-    setBarClosesAt(barCloseAt);
-
     if (stateTheEvent.when) {
       const theEventDate = new Date(stateTheEvent.when).toLocaleString(
         "en-US",
@@ -368,7 +322,7 @@ const EventDetails = (props: propsTypes) => {
           year: "numeric",
         }
       );
-      console.log("theEventDate", theEventDate);
+      //console.log("theEventDate", theEventDate);
       setAllEventsThatDay(
         _.filter(stateGoogleCalEvents, (gCalEvent) => {
           if (gCalEvent.start.date) {
@@ -402,6 +356,504 @@ const EventDetails = (props: propsTypes) => {
     }
   }, [stateTheEvent]);
 
+  const QuoteProcessor = () => {
+    //concept from https://codesandbox.io/s/formik-v2-useformikcontext-2qjrl
+    const { values, setFieldValue } = useFormikContext();
+    const formikValues: FormState = values || {};
+
+    useEffect(() => {
+      if (stateTheEvent.barHours) {
+        //pulls all the numbers from stateTheEvent.barHours into an array
+        const barHoursNumbers: number[] =
+          stateTheEvent.barHours.match(/^\d+|\d+\b|\d+(?=\w)/g);
+        //console.log("EventDetails barHoursNumbers", barHoursNumbers);
+        if (barHoursNumbers) {
+          //pulls the first number [0] from stateTheEvent.barHours
+          barOpenAt =
+            barHoursNumbers[0].toString().length < 3 //where people put in 330 to 730
+              ? Number(barHoursNumbers[0])
+              : Number(barHoursNumbers[0].toString().slice(0, -2)) +
+                Number(barHoursNumbers[0].toString().slice(-2)) / 60;
+
+          if (
+            barHoursNumbers[1].toString().length === 2 &&
+            barHoursNumbers[1] > 12
+          ) {
+            //if the second number looks like minutes (double digits greater than 12)
+            barOpenAt += Number(barHoursNumbers[1]) / 60;
+          }
+
+          //pulls the second number [1] from stateTheEvent.barHours IF it's greater than 0 and less than 13, because sometimes someone enters 4:00 - 6:00 and the match regex considers the 00 the second number
+          barCloseAt =
+            barHoursNumbers[1] > 0 &&
+            barHoursNumbers[1] < 13 &&
+            barHoursNumbers[1].toString().length < 3
+              ? Number(barHoursNumbers[1])
+              : barHoursNumbers[1] > 0 &&
+                barHoursNumbers[1].toString().length >= 3 //where people put in 330 to 730
+              ? Number(barHoursNumbers[1].toString().slice(0, -2)) +
+                Number(barHoursNumbers[1].toString().slice(-2)) / 60
+              : barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
+                barHoursNumbers[barHoursNumbers.length - 1] < 13 &&
+                barHoursNumbers[barHoursNumbers.length - 1].toString().length <
+                  3
+              ? Number(barHoursNumbers[barHoursNumbers.length - 1])
+              : barHoursNumbers[barHoursNumbers.length - 1] > 0 &&
+                barHoursNumbers[barHoursNumbers.length - 1].toString().length >=
+                  3 //where people put in 330 to 730
+              ? Number(
+                  barHoursNumbers[barHoursNumbers.length - 1]
+                    .toString()
+                    .slice(0, -2)
+                ) +
+                Number(
+                  barHoursNumbers[barHoursNumbers.length - 1]
+                    .toString()
+                    .slice(-2)
+                ) /
+                  60
+              : Number(barHoursNumbers[2]);
+
+          if (
+            barHoursNumbers[barHoursNumbers.length - 1].toString().length ===
+              2 &&
+            barHoursNumbers[barHoursNumbers.length - 1] > 12
+          ) {
+            //if the last number looks like minutes (double digits greater than 12)
+            barCloseAt +=
+              Number(barHoursNumbers[barHoursNumbers.length - 1]) / 60;
+          }
+
+          if (Number(barOpenAt) > Number(barCloseAt)) {
+            //if it's like 11am to 2pm
+            let barHoursAmount: number = 0;
+            barHoursAmount += 12 - Number(barOpenAt);
+            barHoursAmount += Number(barCloseAt);
+            setNumBarHours(barHoursAmount);
+            console.log("barHoursAmount", barHoursAmount);
+          } else {
+            setNumBarHours(Number(barCloseAt) - Number(barOpenAt));
+          }
+        } else {
+          setNumBarHours(-1);
+        }
+      }
+      setBarOpensAt(barOpenAt);
+      setFieldValue("barOpensAt", barOpenAt);
+      setBarClosesAt(barCloseAt);
+      setFieldValue("barClosesAt", barClosesAt);
+    }, [stateTheEvent]);
+
+    const [initialLoad, setInitialLoad] = useState<boolean>(true);
+
+    //pulled out of DraftQuote
+    const [packageTitle, setPackageTitle] = useState<string>();
+    const [packagePrice, setPackagePrice] = useState<number>();
+    const [numBartenders, setNumBartenders] = useState<number>();
+    const [numBarbacks, setNumBarbacks] = useState<number>();
+    const [numSetupHours, setNumSetupHours] = useState<number>();
+    const [numCleanupHours, setNumCleanupHours] = useState<number>();
+    const [arriveAt, setArriveAt] = useState<string>();
+    const [leaveAt, setLeaveAt] = useState<string>();
+    const [guestRange, setGuestRange] = useState<string>();
+    const [numTotalHours, setNumTotalHours] = useState<number>();
+
+    //AutoDraft Quote Setup
+    useEffect(() => {
+      if (barOpensAt && barClosesAt && numBarHours) {
+        setFieldValue("numBarHours", numBarHours);
+        setPackageTitle("");
+        setPackagePrice(0.0);
+        setNumBartenders(1);
+        setNumBarbacks(0);
+        let calcPrice = 0;
+        let calcSetupHours = 0;
+        let calcCleanupHours = 0;
+        if (stateTheEvent.guestCount) {
+          if (stateTheEvent.guestCount < 51) {
+            if (
+              stateTheEvent.extraStuff &&
+              stateTheEvent.extraStuff.indexOf(
+                "Mini Bar (4'x5' portable bar)"
+              ) > -1
+            ) {
+              calcSetupHours = 2;
+              calcCleanupHours = 1;
+              setPackageTitle("Pretty Penny Plus");
+              setFieldValue("packageTitle", "Pretty Penny Plus");
+              setGuestRange("50 or less");
+              setFieldValue("guestRange", "50 or less");
+              calcPrice = 995.0;
+              setNumBartenders(1);
+              setFieldValue("numBartenders", 1);
+            } else {
+              calcSetupHours = 2;
+              calcCleanupHours = 0.5;
+              setPackageTitle("Pretty Penny");
+              setFieldValue("packageTitle", "Pretty Penny");
+              setGuestRange("50 or less");
+              setFieldValue("guestRange", "50 or less");
+              calcPrice = 895.0;
+              setNumBartenders(1);
+              setFieldValue("numBartenders", 1);
+            }
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours > 3
+            ) {
+              calcPrice += (numBarHours - 3) * 75 * 1; //1 bartender
+              console.log("add hours - calcPrice: ", calcPrice);
+            }
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours < 3
+            ) {
+              calcPrice -= (3 - numBarHours) * 75 * 1; //1 bartender
+              console.log("subtract hours - calcPrice: ", calcPrice);
+            }
+          } //if (props.guestCount < 51)
+          else if (
+            stateTheEvent.guestCount > 50 &&
+            stateTheEvent.guestCount < 101
+          ) {
+            calcSetupHours = 2;
+            calcCleanupHours = 0.5;
+            setPackageTitle("Rags to Riches");
+            setFieldValue("packageTitle", "Rags to Riches");
+            setGuestRange("50-100");
+            setFieldValue("guestRange", "50-100");
+            calcPrice = 1895.0;
+            setNumBartenders(2);
+            setFieldValue("numBartenders", 2);
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours > 5.5
+            ) {
+              calcPrice += (numBarHours - 5.5) * 75 * 2; //2 bartenders
+              console.log(
+                "add $" + (numBarHours - 5.5) * 75 * 2 + " - calcPrice: ",
+                calcPrice
+              );
+            }
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours < 5.5
+            ) {
+              calcPrice -= (5.5 - numBarHours) * 75 * 2;
+              console.log(
+                "subtract $" + (5.5 - numBarHours) * 75 * 2 + " - calcPrice: ",
+                calcPrice
+              );
+            }
+          } //else if (props.guestCount > 50 && props.guestCount < 101)
+          else if (
+            stateTheEvent.guestCount > 100 &&
+            stateTheEvent.guestCount < 151
+          ) {
+            calcSetupHours = 2;
+            calcCleanupHours = 0.5;
+            setPackageTitle("Rags to Riches Plus");
+            setFieldValue("packageTitle", "Rags to Riches Plus");
+            setGuestRange("100-150");
+            setFieldValue("guestRange", "100-150");
+            calcPrice = 2595.0;
+            setNumBartenders(2);
+            setFieldValue("numBartenders", 2);
+            setNumBarbacks(1);
+            setFieldValue("numBarbacks", 1);
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours > 5.5
+            ) {
+              calcPrice += (numBarHours - 5.5) * 75 * 2; //2 bartenders
+              console.log("add hours - calcPrice: ", calcPrice);
+            }
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours < 5.5
+            ) {
+              calcPrice -= (5.5 - numBarHours) * 75 * 2; //2 bartenders
+              console.log("subtract hours - calcPrice: ", calcPrice);
+            }
+          } //else if (props.guestCount > 100 && props.guestCount < 151)
+
+          // if (props.extraStuff && props.extraStuff.indexOf("Bar Bella") > -1) {
+          //   calcPrice += 500;
+          // }
+          if (
+            stateTheEvent.extraStuff &&
+            stateTheEvent.extraStuff.indexOf("ice") > -1
+          ) {
+            calcPrice += stateTheEvent.guestCount * 2; //$2 per 2 pounds of ice per person
+            console.log("plus ice - calcPrice: ", calcPrice);
+          }
+
+          const arrivalTime = barOpensAt && Number(barOpensAt) - calcSetupHours;
+          const departureTime =
+            barClosesAt && Number(barClosesAt) + calcCleanupHours;
+
+          const arriveAtTime = () => {
+            if (arrivalTime && arrivalTime >= 1) {
+              const hours = Number(arrivalTime.toString().split(".")[0]);
+              const minutes =
+                (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
+              const amPM = hours > 9 ? "am" : "pm";
+              return hours + ":" + (minutes || "00") + amPM;
+            } else if ((arrivalTime && arrivalTime < 1) || arrivalTime === 0) {
+              const hours = 12 + Number(arrivalTime.toString().split(".")[0]);
+              const minutes =
+                (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
+              const amPM = hours > 9 && hours != 12 ? "am" : "pm";
+              return hours + ":" + (minutes || "00") + amPM;
+            } else {
+              return;
+            }
+          };
+
+          const leaveAtTime = () => {
+            if (departureTime) {
+              const hours = Number(departureTime.toString().split(".")[0]);
+              const minutes =
+                (Number(departureTime.toString().split(".")[1]) / 10) * 60;
+              const amPM = hours === 12 ? "am" : "pm";
+              return hours + ":" + (minutes || "00") + amPM;
+            } else {
+              return;
+            }
+          };
+
+          setArriveAt(arriveAtTime());
+          setFieldValue("arriveAt", arriveAtTime());
+          setLeaveAt(leaveAtTime());
+          setFieldValue("leaveAt", leaveAtTime());
+          setNumSetupHours(calcSetupHours);
+          setFieldValue("numSetupHours", calcSetupHours);
+          setNumCleanupHours(calcCleanupHours);
+          setFieldValue("numCleanupHours", calcCleanupHours);
+          setPackagePrice(calcPrice);
+          setFieldValue("packagePrice", calcPrice);
+        } //if (props.guestCount)
+        if (numSetupHours && numCleanupHours) {
+          setNumTotalHours(
+            // numBarHours && numBarHours + calcSetupHours + calcCleanupHours
+            numBarHours && numBarHours + numSetupHours + numCleanupHours
+          );
+          setFieldValue(
+            "numTotalHours",
+            numBarHours && numBarHours + numSetupHours + numCleanupHours
+          );
+          console.log("numSetupHours", numSetupHours);
+        }
+      }
+      setInitialLoad(false);
+    }, [barOpensAt, barClosesAt, numBarHours]);
+    //END AutoDraft Quote Setup
+
+    //Manual Updates
+    useEffect(() => {
+      // console.log(values);
+      if (!initialLoad) {
+        setFieldValue("numBarHours", numBarHours);
+        let calcPrice = formikValues.packagePrice || 0;
+        let calcSetupHours = formikValues.numSetupHours || 2;
+        let calcCleanupHours = formikValues.numCleanupHours || 0.5;
+        if (stateTheEvent.guestCount) {
+          if (stateTheEvent.guestCount < 51) {
+            if (
+              stateTheEvent.extraStuff &&
+              stateTheEvent.extraStuff.indexOf(
+                "Mini Bar (4'x5' portable bar)"
+              ) > -1
+            ) {
+              // setPackageTitle("Pretty Penny Plus");
+              // setFieldValue("packageTitle", "Pretty Penny Plus");
+              // setGuestRange("50 or less");
+              // setFieldValue("guestRange", "50 or less");
+              calcPrice = 995.0;
+              //setNumBartenders(1);
+              //setFieldValue("numBartenders", "1");
+            } else {
+              // calcSetupHours = 2;
+              // calcCleanupHours = 0.5;
+              // setPackageTitle("Pretty Penny");
+              // setFieldValue("packageTitle", "Pretty Penny");
+              // setGuestRange("50 or less");
+              // setFieldValue("guestRange", "50 or less");
+              calcPrice = 895.0;
+              // setNumBartenders(1);
+              // setFieldValue("numBartenders", "1");
+            }
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours > 3
+            ) {
+              calcPrice +=
+                (numBarHours - 3) * 75 * Number(formikValues.numBartenders);
+            }
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours < 3
+            ) {
+              calcPrice -=
+                (3 - numBarHours) * 75 * Number(formikValues.numBartenders);
+            }
+          } //if (props.guestCount < 51)
+          else if (
+            stateTheEvent.guestCount > 50 &&
+            stateTheEvent.guestCount < 101
+          ) {
+            // calcSetupHours = 2;
+            // calcCleanupHours = 0.5;
+            // setPackageTitle("Rags to Riches");
+            // setFieldValue("packageTitle", "Rags to Riches");
+            // setGuestRange("50-100");
+            // setFieldValue("guestRange", "50-100");
+            calcPrice = 1895.0;
+            // setNumBartenders(2);
+            // setFieldValue("numBartenders", "2");
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours > 5.5
+            ) {
+              calcPrice +=
+                (numBarHours - 5.5) * 75 * Number(formikValues.numBartenders);
+            }
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours < 5.5
+            ) {
+              calcPrice -=
+                (5.5 - numBarHours) * 75 * Number(formikValues.numBartenders);
+              console.log(
+                "subtract $" +
+                  (5.5 - numBarHours) *
+                    75 *
+                    Number(formikValues.numBartenders) +
+                  " - calcPrice: ",
+                calcPrice
+              );
+            }
+          } //else if (props.guestCount > 50 && props.guestCount < 101)
+          else if (
+            stateTheEvent.guestCount > 100 &&
+            stateTheEvent.guestCount < 151
+          ) {
+            // calcSetupHours = 2;
+            // calcCleanupHours = 0.5;
+            // setPackageTitle("Rags to Riches Plus");
+            // setFieldValue("packageTitle", "Rags to Riches Plus");
+            // setGuestRange("100-150");
+            // setFieldValue("guestRange", "100-150");
+            calcPrice = 2595.0;
+            // setNumBartenders(2);
+            // setFieldValue("numBartenders", "2");
+            // setNumBarbacks(1);
+            // setFieldValue("numBarbacks", "1");
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours > 5.5
+            ) {
+              calcPrice +=
+                (numBarHours - 5.5) * 75 * Number(formikValues.numBartenders);
+            }
+            if (
+              Number(formikValues.numBartenders) &&
+              numBarHours &&
+              numBarHours < 5.5
+            ) {
+              calcPrice -=
+                (5.5 - numBarHours) * 75 * Number(formikValues.numBartenders);
+            }
+          } //else if (props.guestCount > 100 && props.guestCount < 151)
+
+          // if (props.extraStuff && props.extraStuff.indexOf("Bar Bella") > -1) {
+          //   calcPrice += 500;
+          // }
+
+          if (
+            stateTheEvent.extraStuff &&
+            stateTheEvent.extraStuff.indexOf("ice") > -1
+          ) {
+            console.log(calcPrice + " - before ice");
+            calcPrice += stateTheEvent.guestCount * 2; //$2 per 2 pounds of ice per person
+          }
+
+          const arrivalTime = barOpensAt && Number(barOpensAt) - calcSetupHours;
+          const departureTime =
+            barClosesAt && Number(barClosesAt) + calcCleanupHours;
+
+          const arriveAtTime = () => {
+            if (arrivalTime && arrivalTime >= 1) {
+              const hours = Number(arrivalTime.toString().split(".")[0]);
+              const minutes =
+                (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
+              const amPM = hours > 9 ? "am" : "pm";
+              return hours + ":" + (minutes || "00") + amPM;
+            } else if ((arrivalTime && arrivalTime < 1) || arrivalTime === 0) {
+              const hours = 12 + Number(arrivalTime.toString().split(".")[0]);
+              const minutes =
+                (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
+              const amPM = hours > 9 && hours != 12 ? "am" : "pm";
+              return hours + ":" + (minutes || "00") + amPM;
+            } else {
+              return;
+            }
+          };
+
+          const leaveAtTime = () => {
+            if (departureTime) {
+              const hours = Number(departureTime.toString().split(".")[0]);
+              const minutes =
+                (Number(departureTime.toString().split(".")[1]) / 10) * 60;
+              const amPM = hours === 12 ? "am" : "pm";
+              return hours + ":" + (minutes || "00") + amPM;
+            } else {
+              return;
+            }
+          };
+
+          setArriveAt(arriveAtTime());
+          setFieldValue("arriveAt", arriveAtTime());
+          setLeaveAt(leaveAtTime());
+          setFieldValue("leaveAt", leaveAtTime());
+          setNumCleanupHours(calcCleanupHours);
+          setFieldValue("numCleanupHours", calcCleanupHours);
+          setPackagePrice(calcPrice);
+          setFieldValue("packagePrice", calcPrice);
+        } //if (props.guestCount)
+        if (formikValues.numSetupHours && formikValues.numCleanupHours) {
+          setNumTotalHours(
+            // numBarHours && numBarHours + calcSetupHours + calcCleanupHours
+            numBarHours &&
+              numBarHours +
+                formikValues.numSetupHours +
+                formikValues.numCleanupHours
+          );
+          setFieldValue(
+            "numTotalHours",
+            numBarHours &&
+              numBarHours +
+                formikValues.numSetupHours +
+                formikValues.numCleanupHours
+          );
+          // console.log("numSetupHours", numSetupHours);
+        }
+      }
+    }, [formikValues.numSetupHours]);
+    return null;
+  };
+
   return (
     <Formik
       initialValues={{
@@ -420,6 +872,20 @@ const EventDetails = (props: propsTypes) => {
         phone: stateTheEvent.phone,
         extraNotes: stateTheEvent.extraNotes,
         whenString: stateTheEvent.whenString,
+
+        barOpensAt: "",
+        barClosesAt: "",
+        numBarHours: 0,
+        packageTitle: "",
+        packagePrice: 0,
+        numBartenders: 1,
+        numBarbacks: 0,
+        numSetupHours: 2,
+        numCleanupHours: 0.5,
+        arriveAt: "",
+        leaveAt: "",
+        guestRange: "",
+        numTotalHours: 0,
       }}
       // validationSchema={FORM_VALIDATION}
       onSubmit={(values) => {
@@ -429,6 +895,7 @@ const EventDetails = (props: propsTypes) => {
       {({ setFieldValue, values, resetForm }) => (
         <Form style={{ width: "100%" }}>
           <>
+            <QuoteProcessor />
             <Grid
               container
               sx={{
@@ -728,7 +1195,7 @@ const EventDetails = (props: propsTypes) => {
                             name="where"
                             placeholder="Where"
                             value={values.where || stateTheEvent.where || ""}
-                            onChange={(value: number) =>
+                            onChange={(value: string) =>
                               setFieldValue(
                                 "where",
                                 value !== null ? value : stateTheEvent.where
@@ -750,6 +1217,48 @@ const EventDetails = (props: propsTypes) => {
                           </span>{" "}
                           {stateTheEvent.guestCount}
                         </Typography>
+                      </Grid>
+                    )}
+
+                    {values.numSetupHours && (
+                      <Grid container flexDirection="row">
+                        <Grid item>
+                          <Typography
+                            className="keyHeading"
+                            style={{
+                              fontWeight: "bold",
+                              display: "inline",
+                              marginRight: "4px",
+                            }}
+                          >
+                            Setup Hours:
+                          </Typography>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={10}
+                          sx={{
+                            width: "auto",
+                            maxWidth: "100%",
+                            marginTop: "-3px",
+                          }}
+                        >
+                          <TextFieldWrapper
+                            name="numSetupHours"
+                            type="number"
+                            placeholder="Setup Hours"
+                            value={values.numSetupHours}
+                            onChange={(value: number) => {
+                              setFieldValue(
+                                "numSetupHours",
+                                value !== null ? value : 0
+                              );
+                            }}
+                            // onBlur={(value: number) => {
+                            //   setNumSetupHours(value);
+                            // }}
+                          />
+                        </Grid>
                       </Grid>
                     )}
 
@@ -869,7 +1378,30 @@ const EventDetails = (props: propsTypes) => {
                             >
                               Extra Stuff:
                             </span>{" "}
-                            {stateTheEvent.extraStuff.join(", ")}
+                            {stateTheEvent.extraStuff &&
+                              stateTheEvent.extraStuff.length > 0 && (
+                                <ul style={{ margin: "0px" }}>
+                                  {stateTheEvent.extraStuff.map(
+                                    (extraThing: String) => {
+                                      switch (extraThing) {
+                                        case "ice":
+                                          return (
+                                            <li>
+                                              {extraThing} (~
+                                              {stateTheEvent.guestCount * 2}lbs:
+                                              +$
+                                              {stateTheEvent.guestCount * 2})
+                                            </li>
+                                          ); //2lbs per person // $1/lb.
+                                        case "Mini Bar (4'x5' portable bar)":
+                                          return <li>{extraThing} (+$125)</li>;
+                                        default:
+                                          return <li>{extraThing}</li>;
+                                      }
+                                    }
+                                  )}
+                                </ul>
+                              )}
                           </Typography>
                         </Grid>
                       )}
@@ -923,9 +1455,19 @@ const EventDetails = (props: propsTypes) => {
                   >
                     <DraftQuote
                       {...stateTheEvent}
-                      barOpenAt={barOpensAt}
-                      barCloseAt={barClosesAt}
-                      numBarHours={numBarHours}
+                      barOpenAt={values.barOpensAt}
+                      barCloseAt={values.barClosesAt}
+                      numBarHours={values.numBarHours}
+                      packageTitle={values.packageTitle}
+                      packagePrice={values.packagePrice}
+                      numBartenders={values.numBartenders}
+                      numBarbacks={values.numBarbacks}
+                      numSetupHours={values.numSetupHours}
+                      numCleanupHours={values.numCleanupHours}
+                      arriveAt={values.arriveAt}
+                      leaveAt={values.leaveAt}
+                      guestRange={values.guestRange}
+                      numTotalHours={values.numTotalHours}
                     ></DraftQuote>
                   </Grid>
                 </Grid>
