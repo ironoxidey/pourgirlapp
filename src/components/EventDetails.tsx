@@ -31,6 +31,7 @@ import TextFieldWrapper from "./common/TextField";
 import {
   setEventsList,
   setBartendersList,
+  setServicePackagesList,
   setGoogleCalEventsList,
   setTheEvent,
 } from "../reducers/eventListSlice";
@@ -39,6 +40,7 @@ import { useAppSelector, useAppDispatch } from "../reducers/hooks";
 
 import { useDebouncedCallback } from "use-debounce";
 import { Event } from "../types/Event";
+import { ServicePackage } from "../types/ServicePackage";
 import { GoogleCalEvent } from "../types/GoogleCalEvent";
 import { Calculate } from "@mui/icons-material";
 import { fontStyle, fontWeight } from "@mui/system";
@@ -68,6 +70,7 @@ type FormState = {
   numBarHours?: number;
   packageTitle?: string;
   packagePrice?: number;
+  initialPackagePrice?: number;
   numBartenders?: number;
   numBarbacks?: number;
   numSetupHours?: number;
@@ -76,6 +79,7 @@ type FormState = {
   leaveAt?: string;
   guestRange?: string;
   numTotalHours?: number;
+  basePackage?: ServicePackage;
 };
 const INITIAL_FORM_STATE: FormState = {
   $id: "",
@@ -98,6 +102,7 @@ const INITIAL_FORM_STATE: FormState = {
   numBarHours: 0,
   packageTitle: "",
   packagePrice: 0,
+  initialPackagePrice: 0,
   numBartenders: 1,
   numBarbacks: 0,
   numSetupHours: 2,
@@ -256,7 +261,7 @@ const EventDetails = (props: propsTypes) => {
 
   const [numBarHours, setNumBarHours] = useState<number>();
   const [barOpensAt, setBarOpensAt] = useState<number>();
-  const [barClosesAt, setBarClosesAt] = useState<number>();
+  // const [barClosesAt, setBarClosesAt] = useState<number>();
 
   const handleOnChange = useDebouncedCallback((theEvent: Event) => {
     dispatch(setTheEvent(theEvent));
@@ -304,12 +309,35 @@ const EventDetails = (props: propsTypes) => {
     );
   }, []);
 
+  const stateServicePackages = useAppSelector(
+    (state: any) => state.events.servicePackages
+  );
+
   useEffect(() => {
-    setEvents(stateEvents);
-  }, [stateEvents]);
+    const servicePackages = databases.listDocuments(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+      import.meta.env.VITE_APPWRITE_SERVICEPACKAGES_COLLECTION_ID // collectionId - servicePackages
+      // [Query.orderAsc("firstName")] // queries
+    );
+
+    servicePackages.then(
+      function (response: any) {
+        // console.log(response); // Success
+        dispatch(setServicePackagesList(response.documents));
+        //setCocktails(response.documents);
+      },
+      function (error) {
+        console.log(error); // Failure
+      }
+    );
+  }, []);
 
   let barOpenAt: number;
   let barCloseAt: number;
+
+  useEffect(() => {
+    setEvents(stateEvents);
+  }, [stateEvents]);
 
   useEffect(() => {
     if (stateTheEvent.when) {
@@ -355,6 +383,8 @@ const EventDetails = (props: propsTypes) => {
       );
     }
   }, [stateTheEvent]);
+
+  // const [packageTitle, setPackageTitle] = useState<string>();
 
   const QuoteProcessor = () => {
     //concept from https://codesandbox.io/s/formik-v2-useformikcontext-2qjrl
@@ -440,148 +470,228 @@ const EventDetails = (props: propsTypes) => {
       }
       setBarOpensAt(barOpenAt);
       setFieldValue("barOpensAt", barOpenAt);
-      setBarClosesAt(barCloseAt);
-      setFieldValue("barClosesAt", barClosesAt);
+      // setBarClosesAt(barCloseAt);
+      setFieldValue("barClosesAt", barCloseAt);
     }, [stateTheEvent]);
 
     const [initialLoad, setInitialLoad] = useState<boolean>(true);
 
     //pulled out of DraftQuote
-    const [packageTitle, setPackageTitle] = useState<string>();
-    const [packagePrice, setPackagePrice] = useState<number>();
-    const [numBartenders, setNumBartenders] = useState<number>();
-    const [numBarbacks, setNumBarbacks] = useState<number>();
-    const [numSetupHours, setNumSetupHours] = useState<number>();
-    const [numCleanupHours, setNumCleanupHours] = useState<number>();
-    const [arriveAt, setArriveAt] = useState<string>();
-    const [leaveAt, setLeaveAt] = useState<string>();
-    const [guestRange, setGuestRange] = useState<string>();
-    const [numTotalHours, setNumTotalHours] = useState<number>();
+    // const [packageTitle, setPackageTitle] = useState<string>();
+    // const [packagePrice, setPackagePrice] = useState<number>();
+    // const [numBartenders, setNumBartenders] = useState<number>();
+    // const [numBarbacks, setNumBarbacks] = useState<number>();
+    // const [numSetupHours, setNumSetupHours] = useState<number>();
+    // const [numCleanupHours, setNumCleanupHours] = useState<number>();
+    // const [arriveAt, setArriveAt] = useState<string>();
+    // const [leaveAt, setLeaveAt] = useState<string>();
+    // const [numTotalHours, setNumTotalHours] = useState<number>();
+
+    const guestCountBetween = (packageGuestRange: string) => {
+      const packageMin = Number(packageGuestRange?.split("-")[0]);
+      const packageMax = Number(packageGuestRange?.split("-")[1]);
+      const isBetween =
+        packageMin &&
+        packageMax &&
+        stateTheEvent.guestCount >= packageMin &&
+        stateTheEvent.guestCount <= packageMax;
+
+      return isBetween;
+    };
 
     //AutoDraft Quote Setup
     useEffect(() => {
-      if (barOpensAt && barClosesAt && numBarHours) {
+      if (
+        barOpensAt &&
+        formikValues.barClosesAt &&
+        numBarHours &&
+        initialLoad
+      ) {
         setFieldValue("numBarHours", numBarHours);
-        setPackageTitle("");
-        setPackagePrice(0.0);
-        setNumBartenders(1);
-        setNumBarbacks(0);
+        // setPackageTitle("");
+        // setPackagePrice(0.0);
+        // setNumBartenders(1);
+        // setNumBarbacks(0);
         let calcPrice = 0;
         let calcSetupHours = 0;
         let calcCleanupHours = 0;
-        if (stateTheEvent.guestCount) {
-          if (stateTheEvent.guestCount < 51) {
-            if (
-              stateTheEvent.extraStuff &&
-              stateTheEvent.extraStuff.indexOf(
-                "Mini Bar (4'x5' portable bar)"
-              ) > -1
-            ) {
-              calcSetupHours = 2;
-              calcCleanupHours = 1;
-              setPackageTitle("Pretty Penny Plus");
-              setFieldValue("packageTitle", "Pretty Penny Plus");
-              setGuestRange("50 or less");
-              setFieldValue("guestRange", "50 or less");
-              calcPrice = 995.0;
-              setNumBartenders(1);
-              setFieldValue("numBartenders", 1);
-            } else {
-              calcSetupHours = 2;
-              calcCleanupHours = 0.5;
-              setPackageTitle("Pretty Penny");
-              setFieldValue("packageTitle", "Pretty Penny");
-              setGuestRange("50 or less");
-              setFieldValue("guestRange", "50 or less");
-              calcPrice = 895.0;
-              setNumBartenders(1);
-              setFieldValue("numBartenders", 1);
+        if (stateTheEvent.guestCount && stateServicePackages) {
+          const theServicePackage = stateServicePackages.filter(
+            (servPack: ServicePackage) => {
+              const weddingWords =
+                /\b(wedding|marriage|matrimony|married|nuptials|union|ceremony|reception|bride|groom|vows|betrothal|espousal)\b/gi;
+              const isWedding =
+                stateTheEvent.eventKind.match(weddingWords)?.length > 0;
+              console.log("isWedding", isWedding);
+              if (
+                isWedding &&
+                servPack.packageTitle === "All-Inclusive" &&
+                servPack.guestRange
+              ) {
+                return guestCountBetween(servPack.guestRange); //if stateTheEvent.guestCount is in the package's guest range return true
+              } else if (
+                !isWedding &&
+                servPack.packageTitle !== "All-Inclusive"
+              ) {
+                if (servPack.guestRange && servPack.guestRange != "up to 50") {
+                  return guestCountBetween(servPack.guestRange); //if stateTheEvent.guestCount is in the package's guest range return true
+                } else if (
+                  servPack.guestRange == "up to 50" &&
+                  stateTheEvent.guestCount <= 50
+                ) {
+                  if (
+                    servPack.includesExtraStuff &&
+                    servPack.includesExtraStuff.length > 0
+                  ) {
+                    const includedPackageExtras =
+                      servPack.includesExtraStuff.filter((inclExtra) => {
+                        return stateTheEvent.extraStuff?.includes(inclExtra);
+                      });
+                    console.log("includedPackageExtras", includedPackageExtras);
+                    return includedPackageExtras?.length > 0; //return true if there are extraStuff the client asked for (in stateTheEvent.extraStuff) that are included in the package (mostly to get the Pretty Penny Plus )
+                  } else {
+                    //if the
+                    return true;
+                  }
+                }
+              }
             }
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours > 3
-            ) {
-              calcPrice += (numBarHours - 3) * 75 * 1; //1 bartender
-              console.log("add hours - calcPrice: ", calcPrice);
-            }
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours < 3
-            ) {
-              calcPrice -= (3 - numBarHours) * 75 * 1; //1 bartender
-              console.log("subtract hours - calcPrice: ", calcPrice);
-            }
-          } //if (props.guestCount < 51)
-          else if (
-            stateTheEvent.guestCount > 50 &&
-            stateTheEvent.guestCount < 101
-          ) {
-            calcSetupHours = 2;
-            calcCleanupHours = 0.5;
-            setPackageTitle("Rags to Riches");
-            setFieldValue("packageTitle", "Rags to Riches");
-            setGuestRange("50-100");
-            setFieldValue("guestRange", "50-100");
-            calcPrice = 1895.0;
-            setNumBartenders(2);
-            setFieldValue("numBartenders", 2);
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours > 5.5
-            ) {
-              calcPrice += (numBarHours - 5.5) * 75 * 2; //2 bartenders
-              console.log(
-                "add $" + (numBarHours - 5.5) * 75 * 2 + " - calcPrice: ",
-                calcPrice
-              );
-            }
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours < 5.5
-            ) {
-              calcPrice -= (5.5 - numBarHours) * 75 * 2;
-              console.log(
-                "subtract $" + (5.5 - numBarHours) * 75 * 2 + " - calcPrice: ",
-                calcPrice
-              );
-            }
-          } //else if (props.guestCount > 50 && props.guestCount < 101)
-          else if (
-            stateTheEvent.guestCount > 100 &&
-            stateTheEvent.guestCount < 151
-          ) {
-            calcSetupHours = 2;
-            calcCleanupHours = 0.5;
-            setPackageTitle("Rags to Riches Plus");
-            setFieldValue("packageTitle", "Rags to Riches Plus");
-            setGuestRange("100-150");
-            setFieldValue("guestRange", "100-150");
-            calcPrice = 2595.0;
-            setNumBartenders(2);
-            setFieldValue("numBartenders", 2);
-            setNumBarbacks(1);
-            setFieldValue("numBarbacks", 1);
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours > 5.5
-            ) {
-              calcPrice += (numBarHours - 5.5) * 75 * 2; //2 bartenders
-              console.log("add hours - calcPrice: ", calcPrice);
-            }
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours < 5.5
-            ) {
-              calcPrice -= (5.5 - numBarHours) * 75 * 2; //2 bartenders
-              console.log("subtract hours - calcPrice: ", calcPrice);
-            }
-          } //else if (props.guestCount > 100 && props.guestCount < 151)
+          );
+          console.log("theServicePackage", theServicePackage[0]);
+          setFieldValue("basePackage", theServicePackage[0]);
+
+          setFieldValue(
+            "packageTitle",
+            theServicePackage[0]?.packageTitle != "All-Inclusive"
+              ? theServicePackage[0]?.packageTitle
+              : stateTheEvent.where
+          );
+          setFieldValue("packagePrice", theServicePackage[0]?.packagePrice);
+          calcPrice = theServicePackage[0]?.packagePrice || 0;
+          setFieldValue("numBartenders", theServicePackage[0]?.numBartenders);
+          setFieldValue("numBarbacks", theServicePackage[0]?.numBarbacks);
+          setFieldValue("numSetupHours", theServicePackage[0]?.numSetupHours);
+          calcSetupHours = theServicePackage[0]?.numSetupHours || 0;
+          setFieldValue(
+            "numCleanupHours",
+            theServicePackage[0]?.numCleanupHours
+          );
+          calcCleanupHours = theServicePackage[0]?.numCleanupHours || 0;
+          setFieldValue("guestRange", theServicePackage[0]?.guestRange);
+
+          // if (stateTheEvent.guestCount < 51) {
+          //   if (
+          //     stateTheEvent.extraStuff &&
+          //     stateTheEvent.extraStuff.indexOf(
+          //       "Mini Bar (4'x5' portable bar)"
+          //     ) > -1
+          //   ) {
+          //     calcSetupHours = 2;
+          //     calcCleanupHours = 1;
+          //     // setPackageTitle("Pretty Penny Plus");
+          //     setFieldValue("packageTitle", "Pretty Penny Plus");
+          //     setFieldValue("guestRange", "50 or less");
+          //     calcPrice = 995.0;
+          //     setFieldValue("initalPackagePrice", 995);
+          //     setNumBartenders(1);
+          //     setFieldValue("numBartenders", 1);
+          //   } else {
+          //     calcSetupHours = 2;
+          //     calcCleanupHours = 0.5;
+          //     // setPackageTitle("Pretty Penny");
+          //     setFieldValue("packageTitle", "Pretty Penny");
+          //     setFieldValue("guestRange", "50 or less");
+          //     calcPrice = 895.0;
+          //     setFieldValue("initalPackagePrice", 895);
+
+          //     setNumBartenders(1);
+          //     setFieldValue("numBartenders", 1);
+          //   }
+          //   if (
+          //     Number(formikValues.numBartenders) &&
+          //     numBarHours &&
+          //     numBarHours > 3
+          //   ) {
+          //     calcPrice += (numBarHours - 3) * 75 * 1; //1 bartender
+          //     console.log("add hours - calcPrice: ", calcPrice);
+          //   }
+          //   if (
+          //     Number(formikValues.numBartenders) &&
+          //     numBarHours &&
+          //     numBarHours < 3
+          //   ) {
+          //     calcPrice -= (3 - numBarHours) * 75 * 1; //1 bartender
+          //     console.log("subtract hours - calcPrice: ", calcPrice);
+          //   }
+          // } //if (props.guestCount < 51)
+          // else if (
+          //   stateTheEvent.guestCount > 50 &&
+          //   stateTheEvent.guestCount < 101
+          // ) {
+          //   calcSetupHours = 2;
+          //   calcCleanupHours = 0.5;
+          //   // setPackageTitle("Rags to Riches");
+          //   setFieldValue("packageTitle", "Rags to Riches");
+          //   setFieldValue("guestRange", "50-100");
+          //   calcPrice = 1895.0;
+          //   setFieldValue("initalPackagePrice", 1895);
+          //   setNumBartenders(2);
+          //   setFieldValue("numBartenders", 2);
+          //   if (
+          //     Number(formikValues.numBartenders) &&
+          //     numBarHours &&
+          //     numBarHours > 5.5
+          //   ) {
+          //     calcPrice += (numBarHours - 5.5) * 75 * 2; //2 bartenders
+          //     console.log(
+          //       "add $" + (numBarHours - 5.5) * 75 * 2 + " - calcPrice: ",
+          //       calcPrice
+          //     );
+          //   }
+          //   if (
+          //     Number(formikValues.numBartenders) &&
+          //     numBarHours &&
+          //     numBarHours < 5.5
+          //   ) {
+          //     calcPrice -= (5.5 - numBarHours) * 75 * 2;
+          //     console.log(
+          //       "subtract $" + (5.5 - numBarHours) * 75 * 2 + " - calcPrice: ",
+          //       calcPrice
+          //     );
+          //   }
+          // } //else if (props.guestCount > 50 && props.guestCount < 101)
+          // else if (
+          //   stateTheEvent.guestCount > 100 &&
+          //   stateTheEvent.guestCount < 151
+          // ) {
+          //   calcSetupHours = 2;
+          //   calcCleanupHours = 0.5;
+          //   // setPackageTitle("Rags to Riches Plus");
+          //   setFieldValue("packageTitle", "Rags to Riches Plus");
+          //   setFieldValue("guestRange", "100-150");
+          //   setFieldValue("initalPackagePrice", 2595);
+          //   calcPrice = 2595.0;
+          //   setNumBartenders(2);
+          //   setFieldValue("numBartenders", 2);
+          //   setNumBarbacks(1);
+          //   setFieldValue("numBarbacks", 1);
+          //   if (
+          //     Number(formikValues.numBartenders) &&
+          //     numBarHours &&
+          //     numBarHours > 5.5
+          //   ) {
+          //     calcPrice += (numBarHours - 5.5) * 75 * 2; //2 bartenders
+          //     console.log("add hours - calcPrice: ", calcPrice);
+          //   }
+          //   if (
+          //     Number(formikValues.numBartenders) &&
+          //     numBarHours &&
+          //     numBarHours < 5.5
+          //   ) {
+          //     calcPrice -= (5.5 - numBarHours) * 75 * 2; //2 bartenders
+          //     console.log("subtract hours - calcPrice: ", calcPrice);
+          //   }
+          // } //else if (props.guestCount > 100 && props.guestCount < 151)
 
           // if (props.extraStuff && props.extraStuff.indexOf("Bar Bella") > -1) {
           //   calcPrice += 500;
@@ -594,9 +704,31 @@ const EventDetails = (props: propsTypes) => {
             console.log("plus ice - calcPrice: ", calcPrice);
           }
 
+          let plusMinusHours =
+            Number(numBarHours) -
+            Number(theServicePackage[0]?.hoursBarService || 0);
+          console.log("numBarHours", numBarHours);
+          console.log(
+            "theServicePackage[0].hoursBarService",
+            theServicePackage[0]?.hoursBarService
+          );
+          console.log("plusMinusHours", plusMinusHours);
+          console.log("theServicePackage[0]", theServicePackage[0]);
+
+          const difFactoring =
+            plusMinusHours *
+            75 *
+            ((theServicePackage[0]?.numBartenders || 0) + //formikValues aren't getting updated fast enough
+              (theServicePackage[0]?.numBarbacks || 0));
+
+          console.log("difFactoring", difFactoring);
+
+          calcPrice += difFactoring;
+
           const arrivalTime = barOpensAt && Number(barOpensAt) - calcSetupHours;
           const departureTime =
-            barClosesAt && Number(barClosesAt) + calcCleanupHours;
+            formikValues.barClosesAt &&
+            Number(formikValues.barClosesAt) + calcCleanupHours;
 
           const arriveAtTime = () => {
             if (arrivalTime && arrivalTime >= 1) {
@@ -628,31 +760,29 @@ const EventDetails = (props: propsTypes) => {
             }
           };
 
-          setArriveAt(arriveAtTime());
+          // setArriveAt(arriveAtTime());
           setFieldValue("arriveAt", arriveAtTime());
-          setLeaveAt(leaveAtTime());
+          // setLeaveAt(leaveAtTime());
           setFieldValue("leaveAt", leaveAtTime());
-          setNumSetupHours(calcSetupHours);
+          // setNumSetupHours(calcSetupHours);
           setFieldValue("numSetupHours", calcSetupHours);
-          setNumCleanupHours(calcCleanupHours);
+          // setNumCleanupHours(calcCleanupHours);
           setFieldValue("numCleanupHours", calcCleanupHours);
-          setPackagePrice(calcPrice);
+          // setPackagePrice(calcPrice);
           setFieldValue("packagePrice", calcPrice);
         } //if (props.guestCount)
-        if (numSetupHours && numCleanupHours) {
-          setNumTotalHours(
-            // numBarHours && numBarHours + calcSetupHours + calcCleanupHours
-            numBarHours && numBarHours + numSetupHours + numCleanupHours
-          );
+        if (formikValues.numSetupHours && formikValues.numCleanupHours) {
           setFieldValue(
             "numTotalHours",
-            numBarHours && numBarHours + numSetupHours + numCleanupHours
+            numBarHours &&
+              numBarHours +
+                formikValues.numSetupHours +
+                formikValues.numCleanupHours
           );
-          console.log("numSetupHours", numSetupHours);
         }
       }
       setInitialLoad(false);
-    }, [barOpensAt, barClosesAt, numBarHours]);
+    }, [barOpensAt, formikValues.barClosesAt, numBarHours]);
     //END AutoDraft Quote Setup
 
     //Manual Updates
@@ -791,7 +921,8 @@ const EventDetails = (props: propsTypes) => {
 
           const arrivalTime = barOpensAt && Number(barOpensAt) - calcSetupHours;
           const departureTime =
-            barClosesAt && Number(barClosesAt) + calcCleanupHours;
+            formikValues.barClosesAt &&
+            Number(formikValues.barClosesAt) + calcCleanupHours;
 
           const arriveAtTime = () => {
             if (arrivalTime && arrivalTime >= 1) {
@@ -823,23 +954,23 @@ const EventDetails = (props: propsTypes) => {
             }
           };
 
-          setArriveAt(arriveAtTime());
+          // setArriveAt(arriveAtTime());
           setFieldValue("arriveAt", arriveAtTime());
-          setLeaveAt(leaveAtTime());
+          // setLeaveAt(leaveAtTime());
           setFieldValue("leaveAt", leaveAtTime());
-          setNumCleanupHours(calcCleanupHours);
+          // setNumCleanupHours(calcCleanupHours);
           setFieldValue("numCleanupHours", calcCleanupHours);
-          setPackagePrice(calcPrice);
+          // setPackagePrice(calcPrice);
           setFieldValue("packagePrice", calcPrice);
         } //if (props.guestCount)
         if (formikValues.numSetupHours && formikValues.numCleanupHours) {
-          setNumTotalHours(
-            // numBarHours && numBarHours + calcSetupHours + calcCleanupHours
-            numBarHours &&
-              numBarHours +
-                formikValues.numSetupHours +
-                formikValues.numCleanupHours
-          );
+          // setNumTotalHours(
+          //   // numBarHours && numBarHours + calcSetupHours + calcCleanupHours
+          //   numBarHours &&
+          //     numBarHours +
+          //       formikValues.numSetupHours +
+          //       formikValues.numCleanupHours
+          // );
           setFieldValue(
             "numTotalHours",
             numBarHours &&
@@ -850,7 +981,12 @@ const EventDetails = (props: propsTypes) => {
           // console.log("numSetupHours", numSetupHours);
         }
       }
-    }, [formikValues.numSetupHours]);
+    }, [
+      formikValues.numSetupHours,
+      formikValues.numCleanupHours,
+      formikValues.basePackage,
+    ]);
+
     return null;
   };
 
@@ -1170,7 +1306,7 @@ const EventDetails = (props: propsTypes) => {
 
                     {stateTheEvent.where && (
                       <Grid container flexDirection="row">
-                        <Grid item>
+                        <Grid item sx={{ width: "auto" }}>
                           <Typography
                             className="keyHeading"
                             style={{
@@ -1180,9 +1316,10 @@ const EventDetails = (props: propsTypes) => {
                             }}
                           >
                             Where:
-                          </Typography>
+                          </Typography>{" "}
+                          {stateTheEvent.where}
                         </Grid>
-                        <Grid
+                        {/* <Grid
                           item
                           xs={10}
                           sx={{
@@ -1202,7 +1339,7 @@ const EventDetails = (props: propsTypes) => {
                               )
                             }
                           />
-                        </Grid>
+                        </Grid> */}
                       </Grid>
                     )}
 
@@ -1220,9 +1357,20 @@ const EventDetails = (props: propsTypes) => {
                       </Grid>
                     )}
 
-                    {values.numSetupHours && (
-                      <Grid container flexDirection="row">
-                        <Grid item>
+                    {values.basePackage && (
+                      <Grid
+                        container
+                        flexDirection="row"
+                        sx={{ flexWrap: "nowrap", width: "100%" }}
+                        className="formValuesWrapper"
+                      >
+                        <Grid
+                          item
+                          sx={{
+                            width: "auto",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
                           <Typography
                             className="keyHeading"
                             style={{
@@ -1231,36 +1379,243 @@ const EventDetails = (props: propsTypes) => {
                               marginRight: "4px",
                             }}
                           >
-                            Setup Hours:
+                            Base Package:
                           </Typography>
                         </Grid>
                         <Grid
                           item
-                          xs={10}
                           sx={{
-                            width: "auto",
+                            width: "100%",
                             maxWidth: "100%",
                             marginTop: "-3px",
                           }}
                         >
-                          <TextFieldWrapper
-                            name="numSetupHours"
-                            type="number"
-                            placeholder="Setup Hours"
-                            value={values.numSetupHours}
-                            onChange={(value: number) => {
+                          {/* <TextFieldWrapper
+                            name="basePackage"
+                            placeholder="Package Base"
+                            value={
+                              (values.basePackage &&
+                                values.basePackage.packageTitle) ||
+                              ""
+                            }
+                            onChange={(value: string) => {
                               setFieldValue(
-                                "numSetupHours",
-                                value !== null ? value : 0
+                                "basePackage",
+                                value !== null ? value : ""
                               );
                             }}
                             // onBlur={(value: number) => {
                             //   setNumSetupHours(value);
                             // }}
-                          />
+                          /> */}
+
+                          <Autocomplete
+                            id={"basePackage"}
+                            disableClearable
+                            blurOnSelect
+                            value={values.basePackage}
+                            options={stateServicePackages}
+                            getOptionLabel={(servPack: ServicePackage) => {
+                              return (
+                                servPack.packageTitle +
+                                " ($" +
+                                servPack.packagePrice +
+                                ")" +
+                                // " — " +
+                                // servPack.guestRange +
+                                // " guests" +
+                                " — " +
+                                servPack.hoursBarService +
+                                " hours"
+                              );
+                            }}
+                            // onFocus={() => {
+                            //   dispatch(setRightToMakeChanges("FORM"));
+                            // }}
+                            onChange={(e: any, value: ServicePackage) => {
+                              setFieldValue(
+                                "basePackage",
+                                value !== null ? value : {}
+                              );
+
+                              //console.log('values.cocktail', cocktail);
+                            }}
+                            renderOption={(props, option, { selected }) => (
+                              <li {...props}>
+                                <Grid container alignItems="center">
+                                  <Typography
+                                    sx={{
+                                      margin: "0 4px",
+                                    }}
+                                  >
+                                    {option.packageTitle}
+                                  </Typography>
+                                </Grid>
+                              </li>
+                            )}
+                            renderInput={(params: any) => (
+                              <TextField
+                                {...params}
+                                sx={{ width: "100%" }}
+                                variant="standard"
+                                // label={`Base Package`}
+                                name={"basePackage"}
+                              />
+                            )}
+                          ></Autocomplete>
                         </Grid>
                       </Grid>
                     )}
+
+                    <Grid
+                      container
+                      flexDirection="row"
+                      sx={{ flexWrap: "nowrap", width: "100%" }}
+                      className="formValuesWrapper"
+                    >
+                      <Grid
+                        item
+                        sx={{
+                          width: "auto",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <Typography
+                          className="keyHeading"
+                          style={{
+                            fontWeight: "bold",
+                            display: "inline",
+                            marginRight: "4px",
+                          }}
+                        >
+                          Package Title:
+                        </Typography>
+                      </Grid>
+                      <Grid
+                        item
+                        sx={{
+                          width: "100%",
+                          maxWidth: "100%",
+                          marginTop: "-3px",
+                        }}
+                      >
+                        <TextFieldWrapper
+                          name="packageTitle"
+                          placeholder="Package Title"
+                          value={values.packageTitle}
+                          onChange={(value: string) => {
+                            setFieldValue(
+                              "packageTitle",
+                              value !== null ? value : ""
+                            );
+                          }}
+                          // onBlur={(value: number) => {
+                          //   setNumSetupHours(value);
+                          // }}
+                        />
+                      </Grid>
+                    </Grid>
+
+                    <Grid
+                      container
+                      flexDirection="row"
+                      sx={{ flexWrap: "nowrap", width: "100%" }}
+                      className="formValuesWrapper"
+                    >
+                      <Grid
+                        item
+                        sx={{
+                          width: "auto",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <Typography
+                          className="keyHeading"
+                          style={{
+                            fontWeight: "bold",
+                            display: "inline",
+                            marginRight: "4px",
+                          }}
+                        >
+                          Setup Hours:
+                        </Typography>
+                      </Grid>
+                      <Grid
+                        item
+                        xs={10}
+                        sx={{
+                          width: "100%",
+                          maxWidth: "100%",
+                          marginTop: "-3px",
+                        }}
+                      >
+                        <TextFieldWrapper
+                          name="numSetupHours"
+                          type="number"
+                          placeholder="Setup Hours"
+                          value={values.numSetupHours}
+                          onChange={(value: number) => {
+                            setFieldValue(
+                              "numSetupHours",
+                              value !== null ? value : 0
+                            );
+                          }}
+                          // onBlur={(value: number) => {
+                          //   setNumSetupHours(value);
+                          // }}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Grid
+                      container
+                      flexDirection="row"
+                      sx={{ flexWrap: "nowrap", width: "100%" }}
+                      className="formValuesWrapper"
+                    >
+                      <Grid
+                        item
+                        sx={{
+                          width: "auto",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <Typography
+                          className="keyHeading"
+                          style={{
+                            fontWeight: "bold",
+                            display: "inline",
+                            marginRight: "4px",
+                          }}
+                        >
+                          Cleanup Hours:
+                        </Typography>
+                      </Grid>
+                      <Grid
+                        item
+                        xs={10}
+                        sx={{
+                          width: "100%",
+                          maxWidth: "100%",
+                          marginTop: "-3px",
+                        }}
+                      >
+                        <TextFieldWrapper
+                          name="numCleanupHours"
+                          type="number"
+                          placeholder="Cleanup Hours"
+                          value={values.numCleanupHours}
+                          onChange={(value: number) => {
+                            setFieldValue(
+                              "numCleanupHours",
+                              value !== null ? value : 0
+                            );
+                          }}
+                          // onBlur={(value: number) => {
+                          //   setNumCleanupHours(value);
+                          // }}
+                        />
+                      </Grid>
+                    </Grid>
 
                     {stateTheEvent.barHours && numBarHours && (
                       <>
@@ -1280,6 +1635,22 @@ const EventDetails = (props: propsTypes) => {
                             })`}
                           </Typography>
                         </Grid>
+                        <Grid item>
+                          <Typography>
+                            <span
+                              className="keyHeading"
+                              style={{ fontWeight: "bold" }}
+                            >
+                              Total Duration:
+                            </span>{" "}
+                            {values.numTotalHours} hours
+                            {" (from "}
+                            {values.arriveAt}
+                            {"  to "}
+                            {values.leaveAt}
+                            {")"}
+                          </Typography>
+                        </Grid>
                         {/* <Grid container flexDirection="row" className="barOpen">
                           <Grid item>
                             <Typography
@@ -1293,7 +1664,10 @@ const EventDetails = (props: propsTypes) => {
                               Bar Open:
                             </Typography>
                           </Grid>
-                          <Grid item sx={{ maxWidth: "100%", marginTop: "-3px" }}>
+                          <Grid
+                            item
+                            sx={{ maxWidth: "100%", marginTop: "-3px" }}
+                          >
                             <TextFieldWrapper
                               name="barOpen"
                               placeholder="Bar Open"
@@ -1307,13 +1681,19 @@ const EventDetails = (props: propsTypes) => {
                               onChange={(value: number) =>
                                 setFieldValue(
                                   "barOpen",
-                                  value !== null ? value : stateTheEvent.barHours
+                                  value !== null
+                                    ? value
+                                    : stateTheEvent.barHours
                                 )
                               }
                             />
                           </Grid>
                         </Grid>
-                        <Grid container flexDirection="row" className="barClose">
+                        <Grid
+                          container
+                          flexDirection="row"
+                          className="barClose"
+                        >
                           <Grid item>
                             <Typography
                               className="keyHeading"
@@ -1326,7 +1706,10 @@ const EventDetails = (props: propsTypes) => {
                               Bar Close:
                             </Typography>
                           </Grid>
-                          <Grid item sx={{ maxWidth: "100%", marginTop: "-3px" }}>
+                          <Grid
+                            item
+                            sx={{ maxWidth: "100%", marginTop: "-3px" }}
+                          >
                             <TextFieldWrapper
                               name="barClose"
                               placeholder="Bar Close"
@@ -1340,12 +1723,15 @@ const EventDetails = (props: propsTypes) => {
                               onChange={(value: number) =>
                                 setFieldValue(
                                   "barClose",
-                                  value !== null ? value : stateTheEvent.barHours
+                                  value !== null
+                                    ? value
+                                    : stateTheEvent.barHours
                                 )
                               }
                             />
                           </Grid>
                         </Grid> */}
+
                         <Grid
                           container
                           flexDirection="row"
@@ -1382,19 +1768,44 @@ const EventDetails = (props: propsTypes) => {
                               stateTheEvent.extraStuff.length > 0 && (
                                 <ul style={{ margin: "0px" }}>
                                   {stateTheEvent.extraStuff.map(
-                                    (extraThing: String) => {
+                                    (extraThing: string) => {
                                       switch (extraThing) {
                                         case "ice":
-                                          return (
-                                            <li>
-                                              {extraThing} (~
-                                              {stateTheEvent.guestCount * 2}lbs:
-                                              +$
-                                              {stateTheEvent.guestCount * 2})
-                                            </li>
-                                          ); //2lbs per person // $1/lb.
+                                          if (
+                                            values?.basePackage?.includesExtraStuff?.includes(
+                                              extraThing
+                                            )
+                                          ) {
+                                            return <li>{extraThing}</li>;
+                                          } else {
+                                            return (
+                                              <li>
+                                                {extraThing} (~
+                                                {stateTheEvent.guestCount * 2}
+                                                lbs:{" "}
+                                                <strong>
+                                                  +$
+                                                  {stateTheEvent.guestCount * 2}
+                                                </strong>
+                                                )
+                                              </li>
+                                            );
+                                          } //2lbs per person // $1/lb.
                                         case "Mini Bar (4'x5' portable bar)":
-                                          return <li>{extraThing} (+$125)</li>;
+                                          if (
+                                            values?.basePackage?.includesExtraStuff?.includes(
+                                              extraThing
+                                            )
+                                          ) {
+                                            return <li>{extraThing}</li>;
+                                          } else {
+                                            return (
+                                              <li>
+                                                {extraThing} (
+                                                <strong>+$125</strong>)
+                                              </li>
+                                            );
+                                          }
                                         default:
                                           return <li>{extraThing}</li>;
                                       }

@@ -38,6 +38,10 @@ body {
 }
 
 .keyHeading {
+  color: var(--gray);
+}
+
+.formValuesWrapper .keyHeading {
   color: var(--green);
 }
 

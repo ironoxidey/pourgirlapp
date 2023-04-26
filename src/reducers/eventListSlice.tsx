@@ -3,11 +3,13 @@ import { MicExternalOff, PlaylistAddOutlined } from "@mui/icons-material";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Event } from "../types/Event";
 import { Bartender } from "../types/Bartender";
+import { ServicePackage } from "../types/ServicePackage";
 import { GoogleCalEvent } from "../types/GoogleCalEvent";
 
 type EventsListState = {
   events?: Event[];
   bartenders?: Bartender[];
+  servicePackages?: ServicePackage[];
   googleCalEvents?: GoogleCalEvent[];
   theEvent?: Event;
 };
@@ -54,6 +56,12 @@ export const eventListSlice = createSlice({
     setBartendersList: (state, action: PayloadAction<Bartender[]>) => {
       state.bartenders = action.payload;
     },
+    setServicePackagesList: (
+      state,
+      action: PayloadAction<ServicePackage[]>
+    ) => {
+      state.servicePackages = action.payload;
+    },
     setGoogleCalEventsList: (
       state,
       action: PayloadAction<GoogleCalEvent[]>
@@ -92,6 +100,7 @@ export const eventListSlice = createSlice({
 export const {
   setEventsList,
   setBartendersList,
+  setServicePackagesList,
   setGoogleCalEventsList,
   setTheEvent,
 } = eventListSlice.actions;

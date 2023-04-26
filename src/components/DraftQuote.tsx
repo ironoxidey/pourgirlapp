@@ -169,6 +169,33 @@ const DraftQuote = (props: propsTypes) => {
   //       } //if (props.guestCount)
   //     }
   //   }, [props]);
+
+  const [barOpensAt, setBarOpensAt] = useState<string>();
+  const [barClosesAt, setBarClosesAt] = useState<string>();
+
+  useEffect(() => {
+    if (props.barOpenAt) {
+      if (Number.isInteger(props.barOpenAt)) {
+        setBarOpensAt(props.barOpenAt.toString());
+      } else {
+        const barOpenSplit = props.barOpenAt.toString().split(".");
+        const barOpenInterpretted: string =
+          barOpenSplit[0] + ":" + (Number(barOpenSplit[1]) / 10) * 60;
+        setBarOpensAt(barOpenInterpretted);
+      }
+    }
+    if (props.barCloseAt) {
+      if (Number.isInteger(props.barCloseAt)) {
+        setBarClosesAt(props.barCloseAt.toString());
+      } else {
+        const barCloseSplit = props.barCloseAt.toString().split(".");
+        const barCloseInterpretted: string =
+          barCloseSplit[0] + ":" + (Number(barCloseSplit[1]) / 10) * 60;
+        setBarClosesAt(barCloseInterpretted);
+      }
+    }
+  }, [props.barOpenAt, props.barCloseAt]);
+
   return (
     <>
       <Grid
@@ -282,8 +309,12 @@ const DraftQuote = (props: propsTypes) => {
               {props.numCleanupHours && props.numCleanupHours < 1
                 ? props.numCleanupHours * 60 + "-minute "
                 : props.numCleanupHours + "-hour "}{" "}
-              cleanup ({props.arriveAt} to {props.leaveAt} —{" "}
-              {props.numTotalHours} hour total duration)
+              cleanup (Bar open from: {barOpensAt}
+              {props.barOpenAt && props.barOpenAt > 9 ? "am" : "pm"} to{" "}
+              {barClosesAt}pm)
+              {/* COME BACK TO THIS!!! I don't like assuming "pm", but I can't mess with it right now. ~April 25th, 2023 */}
+              {/* ({props.arriveAt} to {props.leaveAt} —{" "}
+              {props.numTotalHours} hour total duration) */}
             </li>
             <li>
               Customized beverage menu & shopping list for your choice of
