@@ -10,11 +10,12 @@ body {
   --green: #86ab7f;
   --orange: #f3b79c;
   --gray: #c7c7c7;
+  --primary-font: "Bree", serif;
   font-family: "Bree", serif;
 }
 
 #root {
-  --primary-font: "Bree", serif;
+  /* --primary-font: "Bree", serif; */
 
   width: 100%;
   margin: 0 auto;

@@ -80,6 +80,8 @@ type FormState = {
   guestRange?: string;
   numTotalHours?: number;
   basePackage?: ServicePackage;
+  basePrice?: number;
+  difFactoring?: number;
 };
 const INITIAL_FORM_STATE: FormState = {
   $id: "",
@@ -111,6 +113,7 @@ const INITIAL_FORM_STATE: FormState = {
   leaveAt: "",
   guestRange: "",
   numTotalHours: 0,
+  difFactoring: 0,
 };
 
 type propsTypes = {
@@ -476,17 +479,6 @@ const EventDetails = (props: propsTypes) => {
 
     const [initialLoad, setInitialLoad] = useState<boolean>(true);
 
-    //pulled out of DraftQuote
-    // const [packageTitle, setPackageTitle] = useState<string>();
-    // const [packagePrice, setPackagePrice] = useState<number>();
-    // const [numBartenders, setNumBartenders] = useState<number>();
-    // const [numBarbacks, setNumBarbacks] = useState<number>();
-    // const [numSetupHours, setNumSetupHours] = useState<number>();
-    // const [numCleanupHours, setNumCleanupHours] = useState<number>();
-    // const [arriveAt, setArriveAt] = useState<string>();
-    // const [leaveAt, setLeaveAt] = useState<string>();
-    // const [numTotalHours, setNumTotalHours] = useState<number>();
-
     const guestCountBetween = (packageGuestRange: string) => {
       const packageMin = Number(packageGuestRange?.split("-")[0]);
       const packageMax = Number(packageGuestRange?.split("-")[1]);
@@ -508,13 +500,7 @@ const EventDetails = (props: propsTypes) => {
         initialLoad
       ) {
         setFieldValue("numBarHours", numBarHours);
-        // setPackageTitle("");
-        // setPackagePrice(0.0);
-        // setNumBartenders(1);
-        // setNumBarbacks(0);
-        let calcPrice = 0;
-        let calcSetupHours = 0;
-        let calcCleanupHours = 0;
+
         if (stateTheEvent.guestCount && stateServicePackages) {
           const theServicePackage = stateServicePackages.filter(
             (servPack: ServicePackage) => {
@@ -533,444 +519,177 @@ const EventDetails = (props: propsTypes) => {
                 !isWedding &&
                 servPack.packageTitle !== "All-Inclusive"
               ) {
-                if (servPack.guestRange && servPack.guestRange != "up to 50") {
+                if (servPack.guestRange && servPack.guestRange !== "up to 50") {
+                  //if we've got a service pack guestRange and it's not "up to 50"
                   return guestCountBetween(servPack.guestRange); //if stateTheEvent.guestCount is in the package's guest range return true
                 } else if (
-                  servPack.guestRange == "up to 50" &&
+                  servPack.guestRange === "up to 50" &&
                   stateTheEvent.guestCount <= 50
                 ) {
+                  //if the service pack is "up to 50", and the event's guest count is less than or equal to 50, we have a match!
                   if (
-                    servPack.includesExtraStuff &&
-                    servPack.includesExtraStuff.length > 0
+                    stateTheEvent.extraStuff?.includes(
+                      "Mini Bar (4'x5' portable bar)"
+                    ) &&
+                    servPack.includesExtraStuff?.includes(
+                      "Mini Bar (4'x5' portable bar)"
+                    )
                   ) {
-                    const includedPackageExtras =
-                      servPack.includesExtraStuff.filter((inclExtra) => {
-                        return stateTheEvent.extraStuff?.includes(inclExtra);
-                      });
-                    console.log("includedPackageExtras", includedPackageExtras);
-                    return includedPackageExtras?.length > 0; //return true if there are extraStuff the client asked for (in stateTheEvent.extraStuff) that are included in the package (mostly to get the Pretty Penny Plus )
-                  } else {
-                    //if the
+                    return true;
+                  } else if (
+                    !stateTheEvent.extraStuff.includes(
+                      "Mini Bar (4'x5' portable bar)"
+                    ) &&
+                    !servPack.includesExtraStuff?.includes(
+                      "Mini Bar (4'x5' portable bar)"
+                    )
+                  ) {
                     return true;
                   }
+
+                  // const includedPackageExtras =
+                  //   servPack.includesExtraStuff?.filter((inclExtra) => {
+                  //     return stateTheEvent.extraStuff?.includes(inclExtra);
+                  //   });
+                  // console.log("includedPackageExtras", includedPackageExtras);
+                  // if (
+                  //   includedPackageExtras &&
+                  //   includedPackageExtras.length > 0
+                  // ) {
+                  //   // const includedPackageExtras =
+                  //   //   servPack.includesExtraStuff.filter((inclExtra) => {
+                  //   //     return stateTheEvent.extraStuff?.includes(inclExtra);
+                  //   //   });
+                  //   return true; //return true if there are extraStuff the client asked for (in stateTheEvent.extraStuff) that are included in the package (mostly to get the Pretty Penny Plus )
+                  // } else {
+                  //   return true;
+                  // }
                 }
               }
             }
           );
-          console.log("theServicePackage", theServicePackage[0]);
-          setFieldValue("basePackage", theServicePackage[0]);
-
+          console.log("theServicePackage", theServicePackage);
           setFieldValue(
-            "packageTitle",
-            theServicePackage[0]?.packageTitle != "All-Inclusive"
-              ? theServicePackage[0]?.packageTitle
-              : stateTheEvent.where
+            "basePackage",
+            theServicePackage[theServicePackage.length - 1]
           );
-          setFieldValue("packagePrice", theServicePackage[0]?.packagePrice);
-          calcPrice = theServicePackage[0]?.packagePrice || 0;
-          setFieldValue("numBartenders", theServicePackage[0]?.numBartenders);
-          setFieldValue("numBarbacks", theServicePackage[0]?.numBarbacks);
-          setFieldValue("numSetupHours", theServicePackage[0]?.numSetupHours);
-          calcSetupHours = theServicePackage[0]?.numSetupHours || 0;
-          setFieldValue(
-            "numCleanupHours",
-            theServicePackage[0]?.numCleanupHours
-          );
-          calcCleanupHours = theServicePackage[0]?.numCleanupHours || 0;
-          setFieldValue("guestRange", theServicePackage[0]?.guestRange);
-
-          // if (stateTheEvent.guestCount < 51) {
-          //   if (
-          //     stateTheEvent.extraStuff &&
-          //     stateTheEvent.extraStuff.indexOf(
-          //       "Mini Bar (4'x5' portable bar)"
-          //     ) > -1
-          //   ) {
-          //     calcSetupHours = 2;
-          //     calcCleanupHours = 1;
-          //     // setPackageTitle("Pretty Penny Plus");
-          //     setFieldValue("packageTitle", "Pretty Penny Plus");
-          //     setFieldValue("guestRange", "50 or less");
-          //     calcPrice = 995.0;
-          //     setFieldValue("initalPackagePrice", 995);
-          //     setNumBartenders(1);
-          //     setFieldValue("numBartenders", 1);
-          //   } else {
-          //     calcSetupHours = 2;
-          //     calcCleanupHours = 0.5;
-          //     // setPackageTitle("Pretty Penny");
-          //     setFieldValue("packageTitle", "Pretty Penny");
-          //     setFieldValue("guestRange", "50 or less");
-          //     calcPrice = 895.0;
-          //     setFieldValue("initalPackagePrice", 895);
-
-          //     setNumBartenders(1);
-          //     setFieldValue("numBartenders", 1);
-          //   }
-          //   if (
-          //     Number(formikValues.numBartenders) &&
-          //     numBarHours &&
-          //     numBarHours > 3
-          //   ) {
-          //     calcPrice += (numBarHours - 3) * 75 * 1; //1 bartender
-          //     console.log("add hours - calcPrice: ", calcPrice);
-          //   }
-          //   if (
-          //     Number(formikValues.numBartenders) &&
-          //     numBarHours &&
-          //     numBarHours < 3
-          //   ) {
-          //     calcPrice -= (3 - numBarHours) * 75 * 1; //1 bartender
-          //     console.log("subtract hours - calcPrice: ", calcPrice);
-          //   }
-          // } //if (props.guestCount < 51)
-          // else if (
-          //   stateTheEvent.guestCount > 50 &&
-          //   stateTheEvent.guestCount < 101
-          // ) {
-          //   calcSetupHours = 2;
-          //   calcCleanupHours = 0.5;
-          //   // setPackageTitle("Rags to Riches");
-          //   setFieldValue("packageTitle", "Rags to Riches");
-          //   setFieldValue("guestRange", "50-100");
-          //   calcPrice = 1895.0;
-          //   setFieldValue("initalPackagePrice", 1895);
-          //   setNumBartenders(2);
-          //   setFieldValue("numBartenders", 2);
-          //   if (
-          //     Number(formikValues.numBartenders) &&
-          //     numBarHours &&
-          //     numBarHours > 5.5
-          //   ) {
-          //     calcPrice += (numBarHours - 5.5) * 75 * 2; //2 bartenders
-          //     console.log(
-          //       "add $" + (numBarHours - 5.5) * 75 * 2 + " - calcPrice: ",
-          //       calcPrice
-          //     );
-          //   }
-          //   if (
-          //     Number(formikValues.numBartenders) &&
-          //     numBarHours &&
-          //     numBarHours < 5.5
-          //   ) {
-          //     calcPrice -= (5.5 - numBarHours) * 75 * 2;
-          //     console.log(
-          //       "subtract $" + (5.5 - numBarHours) * 75 * 2 + " - calcPrice: ",
-          //       calcPrice
-          //     );
-          //   }
-          // } //else if (props.guestCount > 50 && props.guestCount < 101)
-          // else if (
-          //   stateTheEvent.guestCount > 100 &&
-          //   stateTheEvent.guestCount < 151
-          // ) {
-          //   calcSetupHours = 2;
-          //   calcCleanupHours = 0.5;
-          //   // setPackageTitle("Rags to Riches Plus");
-          //   setFieldValue("packageTitle", "Rags to Riches Plus");
-          //   setFieldValue("guestRange", "100-150");
-          //   setFieldValue("initalPackagePrice", 2595);
-          //   calcPrice = 2595.0;
-          //   setNumBartenders(2);
-          //   setFieldValue("numBartenders", 2);
-          //   setNumBarbacks(1);
-          //   setFieldValue("numBarbacks", 1);
-          //   if (
-          //     Number(formikValues.numBartenders) &&
-          //     numBarHours &&
-          //     numBarHours > 5.5
-          //   ) {
-          //     calcPrice += (numBarHours - 5.5) * 75 * 2; //2 bartenders
-          //     console.log("add hours - calcPrice: ", calcPrice);
-          //   }
-          //   if (
-          //     Number(formikValues.numBartenders) &&
-          //     numBarHours &&
-          //     numBarHours < 5.5
-          //   ) {
-          //     calcPrice -= (5.5 - numBarHours) * 75 * 2; //2 bartenders
-          //     console.log("subtract hours - calcPrice: ", calcPrice);
-          //   }
-          // } //else if (props.guestCount > 100 && props.guestCount < 151)
-
-          // if (props.extraStuff && props.extraStuff.indexOf("Bar Bella") > -1) {
-          //   calcPrice += 500;
-          // }
-          if (
-            stateTheEvent.extraStuff &&
-            stateTheEvent.extraStuff.indexOf("ice") > -1
-          ) {
-            calcPrice += stateTheEvent.guestCount * 2; //$2 per 2 pounds of ice per person
-            console.log("plus ice - calcPrice: ", calcPrice);
-          }
-
-          let plusMinusHours =
-            Number(numBarHours) -
-            Number(theServicePackage[0]?.hoursBarService || 0);
-          console.log("numBarHours", numBarHours);
-          console.log(
-            "theServicePackage[0].hoursBarService",
-            theServicePackage[0]?.hoursBarService
-          );
-          console.log("plusMinusHours", plusMinusHours);
-          console.log("theServicePackage[0]", theServicePackage[0]);
-
-          const difFactoring =
-            plusMinusHours *
-            75 *
-            ((theServicePackage[0]?.numBartenders || 0) + //formikValues aren't getting updated fast enough
-              (theServicePackage[0]?.numBarbacks || 0));
-
-          console.log("difFactoring", difFactoring);
-
-          calcPrice += difFactoring;
-
-          const arrivalTime = barOpensAt && Number(barOpensAt) - calcSetupHours;
-          const departureTime =
-            formikValues.barClosesAt &&
-            Number(formikValues.barClosesAt) + calcCleanupHours;
-
-          const arriveAtTime = () => {
-            if (arrivalTime && arrivalTime >= 1) {
-              const hours = Number(arrivalTime.toString().split(".")[0]);
-              const minutes =
-                (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
-              const amPM = hours > 9 ? "am" : "pm";
-              return hours + ":" + (minutes || "00") + amPM;
-            } else if ((arrivalTime && arrivalTime < 1) || arrivalTime === 0) {
-              const hours = 12 + Number(arrivalTime.toString().split(".")[0]);
-              const minutes =
-                (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
-              const amPM = hours > 9 && hours != 12 ? "am" : "pm";
-              return hours + ":" + (minutes || "00") + amPM;
-            } else {
-              return;
-            }
-          };
-
-          const leaveAtTime = () => {
-            if (departureTime) {
-              const hours = Number(departureTime.toString().split(".")[0]);
-              const minutes =
-                (Number(departureTime.toString().split(".")[1]) / 10) * 60;
-              const amPM = hours === 12 ? "am" : "pm";
-              return hours + ":" + (minutes || "00") + amPM;
-            } else {
-              return;
-            }
-          };
-
-          // setArriveAt(arriveAtTime());
-          setFieldValue("arriveAt", arriveAtTime());
-          // setLeaveAt(leaveAtTime());
-          setFieldValue("leaveAt", leaveAtTime());
-          // setNumSetupHours(calcSetupHours);
-          setFieldValue("numSetupHours", calcSetupHours);
-          // setNumCleanupHours(calcCleanupHours);
-          setFieldValue("numCleanupHours", calcCleanupHours);
-          // setPackagePrice(calcPrice);
-          setFieldValue("packagePrice", calcPrice);
         } //if (props.guestCount)
-        if (formikValues.numSetupHours && formikValues.numCleanupHours) {
-          setFieldValue(
-            "numTotalHours",
-            numBarHours &&
-              numBarHours +
-                formikValues.numSetupHours +
-                formikValues.numCleanupHours
-          );
-        }
       }
       setInitialLoad(false);
     }, [barOpensAt, formikValues.barClosesAt, numBarHours]);
     //END AutoDraft Quote Setup
 
-    //Manual Updates
+    //if basePackage changes, update all its things
     useEffect(() => {
-      // console.log(values);
-      if (!initialLoad) {
-        setFieldValue("numBarHours", numBarHours);
-        let calcPrice = formikValues.packagePrice || 0;
-        let calcSetupHours = formikValues.numSetupHours || 2;
-        let calcCleanupHours = formikValues.numCleanupHours || 0.5;
-        if (stateTheEvent.guestCount) {
-          if (stateTheEvent.guestCount < 51) {
-            if (
-              stateTheEvent.extraStuff &&
-              stateTheEvent.extraStuff.indexOf(
-                "Mini Bar (4'x5' portable bar)"
-              ) > -1
-            ) {
-              // setPackageTitle("Pretty Penny Plus");
-              // setFieldValue("packageTitle", "Pretty Penny Plus");
-              // setGuestRange("50 or less");
-              // setFieldValue("guestRange", "50 or less");
-              calcPrice = 995.0;
-              //setNumBartenders(1);
-              //setFieldValue("numBartenders", "1");
-            } else {
-              // calcSetupHours = 2;
-              // calcCleanupHours = 0.5;
-              // setPackageTitle("Pretty Penny");
-              // setFieldValue("packageTitle", "Pretty Penny");
-              // setGuestRange("50 or less");
-              // setFieldValue("guestRange", "50 or less");
-              calcPrice = 895.0;
-              // setNumBartenders(1);
-              // setFieldValue("numBartenders", "1");
-            }
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours > 3
-            ) {
-              calcPrice +=
-                (numBarHours - 3) * 75 * Number(formikValues.numBartenders);
-            }
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours < 3
-            ) {
-              calcPrice -=
-                (3 - numBarHours) * 75 * Number(formikValues.numBartenders);
-            }
-          } //if (props.guestCount < 51)
-          else if (
-            stateTheEvent.guestCount > 50 &&
-            stateTheEvent.guestCount < 101
-          ) {
-            // calcSetupHours = 2;
-            // calcCleanupHours = 0.5;
-            // setPackageTitle("Rags to Riches");
-            // setFieldValue("packageTitle", "Rags to Riches");
-            // setGuestRange("50-100");
-            // setFieldValue("guestRange", "50-100");
-            calcPrice = 1895.0;
-            // setNumBartenders(2);
-            // setFieldValue("numBartenders", "2");
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours > 5.5
-            ) {
-              calcPrice +=
-                (numBarHours - 5.5) * 75 * Number(formikValues.numBartenders);
-            }
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours < 5.5
-            ) {
-              calcPrice -=
-                (5.5 - numBarHours) * 75 * Number(formikValues.numBartenders);
-              console.log(
-                "subtract $" +
-                  (5.5 - numBarHours) *
-                    75 *
-                    Number(formikValues.numBartenders) +
-                  " - calcPrice: ",
-                calcPrice
-              );
-            }
-          } //else if (props.guestCount > 50 && props.guestCount < 101)
-          else if (
-            stateTheEvent.guestCount > 100 &&
-            stateTheEvent.guestCount < 151
-          ) {
-            // calcSetupHours = 2;
-            // calcCleanupHours = 0.5;
-            // setPackageTitle("Rags to Riches Plus");
-            // setFieldValue("packageTitle", "Rags to Riches Plus");
-            // setGuestRange("100-150");
-            // setFieldValue("guestRange", "100-150");
-            calcPrice = 2595.0;
-            // setNumBartenders(2);
-            // setFieldValue("numBartenders", "2");
-            // setNumBarbacks(1);
-            // setFieldValue("numBarbacks", "1");
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours > 5.5
-            ) {
-              calcPrice +=
-                (numBarHours - 5.5) * 75 * Number(formikValues.numBartenders);
-            }
-            if (
-              Number(formikValues.numBartenders) &&
-              numBarHours &&
-              numBarHours < 5.5
-            ) {
-              calcPrice -=
-                (5.5 - numBarHours) * 75 * Number(formikValues.numBartenders);
-            }
-          } //else if (props.guestCount > 100 && props.guestCount < 151)
+      if (formikValues.basePackage && formikValues.basePackage.packagePrice) {
+        setFieldValue(
+          "packageTitle",
+          formikValues.basePackage.packageTitle != "All-Inclusive"
+            ? formikValues.basePackage.packageTitle
+            : stateTheEvent.where
+        );
+        setFieldValue("basePrice", formikValues.basePackage.packagePrice);
+        setFieldValue("packagePrice", formikValues.basePackage.packagePrice);
 
-          // if (props.extraStuff && props.extraStuff.indexOf("Bar Bella") > -1) {
-          //   calcPrice += 500;
-          // }
+        setFieldValue("numBartenders", formikValues.basePackage.numBartenders);
+        setFieldValue("numBarbacks", formikValues.basePackage.numBarbacks);
+        setFieldValue("numSetupHours", formikValues.basePackage.numSetupHours);
 
-          if (
-            stateTheEvent.extraStuff &&
-            stateTheEvent.extraStuff.indexOf("ice") > -1
-          ) {
-            console.log(calcPrice + " - before ice");
-            calcPrice += stateTheEvent.guestCount * 2; //$2 per 2 pounds of ice per person
+        setFieldValue(
+          "numCleanupHours",
+          formikValues.basePackage.numCleanupHours
+        );
+        setFieldValue("guestRange", formikValues.basePackage.guestRange);
+      }
+    }, [formikValues.basePackage]);
+
+    //recalculate packagePrice
+    useEffect(() => {
+      if (formikValues.basePackage && formikValues.basePrice) {
+        let calcPrice = formikValues.basePrice || 0;
+        let calcSetupHours = formikValues.numSetupHours || 0;
+        let calcCleanupHours = formikValues.numCleanupHours || 0;
+        if (
+          stateTheEvent.extraStuff &&
+          stateTheEvent.extraStuff.indexOf("ice") > -1
+        ) {
+          calcPrice += stateTheEvent.guestCount * 2; //$2 per 2 pounds of ice per person
+          console.log("plus ice - calcPrice: ", calcPrice);
+        }
+
+        const plusMinusSetupHours =
+          Number(formikValues.numSetupHours) -
+          Number(formikValues.basePackage.numSetupHours);
+        const plusMinusCleanupHours =
+          Number(formikValues.numCleanupHours) -
+          Number(formikValues.basePackage.numCleanupHours);
+
+        let plusMinusHours =
+          Number(numBarHours) -
+          Number(formikValues.basePackage.hoursBarService || 0) +
+          plusMinusSetupHours +
+          plusMinusCleanupHours;
+        console.log("numBarHours", numBarHours);
+        console.log(
+          "formikValues.basePackage.hoursBarService",
+          formikValues.basePackage.hoursBarService
+        );
+        console.log("plusMinusHours", plusMinusHours);
+        console.log("formikValues.basePackage", formikValues.basePackage);
+
+        const difFactoring =
+          plusMinusHours *
+          75 *
+          ((formikValues.basePackage.numBartenders || 0) + //formikValues aren't getting updated fast enough
+            (formikValues.basePackage.numBarbacks || 0));
+
+        console.log("difFactoring", difFactoring);
+
+        setFieldValue("difFactoring", difFactoring);
+
+        calcPrice += difFactoring;
+
+        console.log("calcPrice after difFactoring", calcPrice);
+
+        const arrivalTime = barOpensAt && Number(barOpensAt) - calcSetupHours;
+        const departureTime =
+          formikValues.barClosesAt &&
+          Number(formikValues.barClosesAt) + calcCleanupHours;
+
+        const arriveAtTime = () => {
+          if (arrivalTime && arrivalTime >= 1) {
+            const hours = Number(arrivalTime.toString().split(".")[0]);
+            const minutes =
+              (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
+            const amPM = hours > 9 ? "am" : "pm";
+            return hours + ":" + (minutes || "00") + amPM;
+          } else if ((arrivalTime && arrivalTime < 1) || arrivalTime === 0) {
+            const hours = 12 + Number(arrivalTime.toString().split(".")[0]);
+            const minutes =
+              (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
+            const amPM = hours > 9 && hours != 12 ? "am" : "pm";
+            return hours + ":" + (minutes || "00") + amPM;
+          } else {
+            return;
           }
+        };
 
-          const arrivalTime = barOpensAt && Number(barOpensAt) - calcSetupHours;
-          const departureTime =
-            formikValues.barClosesAt &&
-            Number(formikValues.barClosesAt) + calcCleanupHours;
+        const leaveAtTime = () => {
+          if (departureTime) {
+            const hours = Number(departureTime.toString().split(".")[0]);
+            const minutes =
+              (Number(departureTime.toString().split(".")[1]) / 10) * 60;
+            const amPM = hours === 12 ? "am" : "pm";
+            return hours + ":" + (minutes || "00") + amPM;
+          } else {
+            return;
+          }
+        };
 
-          const arriveAtTime = () => {
-            if (arrivalTime && arrivalTime >= 1) {
-              const hours = Number(arrivalTime.toString().split(".")[0]);
-              const minutes =
-                (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
-              const amPM = hours > 9 ? "am" : "pm";
-              return hours + ":" + (minutes || "00") + amPM;
-            } else if ((arrivalTime && arrivalTime < 1) || arrivalTime === 0) {
-              const hours = 12 + Number(arrivalTime.toString().split(".")[0]);
-              const minutes =
-                (Number(arrivalTime.toString().split(".")[1]) / 10) * 60;
-              const amPM = hours > 9 && hours != 12 ? "am" : "pm";
-              return hours + ":" + (minutes || "00") + amPM;
-            } else {
-              return;
-            }
-          };
-
-          const leaveAtTime = () => {
-            if (departureTime) {
-              const hours = Number(departureTime.toString().split(".")[0]);
-              const minutes =
-                (Number(departureTime.toString().split(".")[1]) / 10) * 60;
-              const amPM = hours === 12 ? "am" : "pm";
-              return hours + ":" + (minutes || "00") + amPM;
-            } else {
-              return;
-            }
-          };
-
-          // setArriveAt(arriveAtTime());
-          setFieldValue("arriveAt", arriveAtTime());
-          // setLeaveAt(leaveAtTime());
-          setFieldValue("leaveAt", leaveAtTime());
-          // setNumCleanupHours(calcCleanupHours);
-          setFieldValue("numCleanupHours", calcCleanupHours);
-          // setPackagePrice(calcPrice);
-          setFieldValue("packagePrice", calcPrice);
-        } //if (props.guestCount)
+        setFieldValue("arriveAt", arriveAtTime());
+        setFieldValue("leaveAt", leaveAtTime());
+        setFieldValue("packagePrice", calcPrice);
         if (formikValues.numSetupHours && formikValues.numCleanupHours) {
-          // setNumTotalHours(
-          //   // numBarHours && numBarHours + calcSetupHours + calcCleanupHours
-          //   numBarHours &&
-          //     numBarHours +
-          //       formikValues.numSetupHours +
-          //       formikValues.numCleanupHours
-          // );
           setFieldValue(
             "numTotalHours",
             numBarHours &&
@@ -978,13 +697,16 @@ const EventDetails = (props: propsTypes) => {
                 formikValues.numSetupHours +
                 formikValues.numCleanupHours
           );
-          // console.log("numSetupHours", numSetupHours);
         }
       }
     }, [
+      formikValues.numBartenders,
+      formikValues.numBarbacks,
+      formikValues.basePackage?.numSetupHours,
+      formikValues.basePackage?.numCleanupHours,
       formikValues.numSetupHours,
       formikValues.numCleanupHours,
-      formikValues.basePackage,
+      formikValues.basePrice,
     ]);
 
     return null;
@@ -1129,7 +851,7 @@ const EventDetails = (props: propsTypes) => {
                       margin: "20px",
                       textAlign: "left",
                       maxWidth: "450px",
-                      width: "40%",
+                      // width: "40%",
                     }}
                     className="eventDetails"
                   >
@@ -1425,7 +1147,11 @@ const EventDetails = (props: propsTypes) => {
                                 // servPack.guestRange +
                                 // " guests" +
                                 " — " +
-                                servPack.hoursBarService +
+                                (
+                                  Number(servPack.hoursBarService) +
+                                  Number(servPack.numSetupHours) +
+                                  Number(servPack.numCleanupHours)
+                                ).toString() +
                                 " hours"
                               );
                             }}
@@ -1446,9 +1172,11 @@ const EventDetails = (props: propsTypes) => {
                                   <Typography
                                     sx={{
                                       margin: "0 4px",
+                                      fontSize: "14px",
+                                      fontFamily: "var(--primary-font)",
                                     }}
                                   >
-                                    {option.packageTitle}
+                                    {option.packageTitle} — {option.guestRange}
                                   </Typography>
                                 </Grid>
                               </li>
@@ -1467,6 +1195,73 @@ const EventDetails = (props: propsTypes) => {
                       </Grid>
                     )}
 
+                    <Grid
+                      container
+                      flexDirection="row"
+                      sx={{ flexWrap: "nowrap", width: "100%" }}
+                      className="formValuesWrapper"
+                    >
+                      <Grid
+                        item
+                        sx={{
+                          width: "auto",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <Typography
+                          className="keyHeading"
+                          style={{
+                            fontWeight: "bold",
+                            display: "inline",
+                            marginRight: "4px",
+                          }}
+                        >
+                          Base Price:
+                        </Typography>
+                      </Grid>
+                      <Grid
+                        item
+                        xs={10}
+                        sx={{
+                          width: "100%",
+                          maxWidth: "100%",
+                          marginTop: "-3px",
+                        }}
+                      >
+                        <TextFieldWrapper
+                          name="basePrice"
+                          type="number"
+                          placeholder="Base Price"
+                          value={values.basePrice}
+                          onChange={(value: number) => {
+                            setFieldValue(
+                              "basePrice",
+                              value !== null ? value : 0
+                            );
+                          }}
+                          // onBlur={(value: number) => {
+                          //   setNumSetupHours(value);
+                          // }}
+                          sx={{
+                            "& .MuiInput-root": {
+                              fontWeight: "bold!important",
+                            },
+                          }}
+                          InputProps={{
+                            startAdornment: (
+                              <Typography
+                                sx={{
+                                  fontWeight: "bold!important",
+                                  fontFamily: "var(--primary-font)",
+                                }}
+                              >
+                                $
+                              </Typography>
+                            ),
+                          }}
+                        />
+                      </Grid>
+                    </Grid>
                     <Grid
                       container
                       flexDirection="row"
@@ -1649,6 +1444,24 @@ const EventDetails = (props: propsTypes) => {
                             {"  to "}
                             {values.leaveAt}
                             {")"}
+                            {values.difFactoring && values.difFactoring > 0 ? (
+                              <>
+                                (<strong>+${values.difFactoring}</strong>)
+                              </>
+                            ) : (
+                              ""
+                            )}
+                            {values.difFactoring && values.difFactoring < 0 ? (
+                              <>
+                                (
+                                <strong>
+                                  -${Math.abs(values.difFactoring)}
+                                </strong>
+                                )
+                              </>
+                            ) : (
+                              ""
+                            )}
                           </Typography>
                         </Grid>
                         {/* <Grid container flexDirection="row" className="barOpen">
