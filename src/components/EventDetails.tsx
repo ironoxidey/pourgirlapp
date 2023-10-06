@@ -15,6 +15,8 @@ import {
   AccordionDetails,
   Avatar,
   Tooltip,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 
 // import { gapi } from "gapi-script"; //Google Api for Calendar
@@ -82,6 +84,9 @@ type FormState = {
   basePackage?: ServicePackage;
   basePrice?: number;
   difFactoring?: number;
+  isChecked?: {
+    [key: string]: boolean;
+  };
 };
 const INITIAL_FORM_STATE: FormState = {
   $id: "",
@@ -114,6 +119,7 @@ const INITIAL_FORM_STATE: FormState = {
   guestRange: "",
   numTotalHours: 0,
   difFactoring: 0,
+  // isChecked: {},
 };
 
 type propsTypes = {
@@ -242,9 +248,10 @@ const EventDetails = (props: propsTypes) => {
   };
 
   useEffect(() => {
-    gapiLoaded(); //inside the useEffect makes sure https://apis.google.com/js/api.js is loaded from index.html
-    gisLoaded(); // inside the useEffect makes sure https://accounts.google.com/gsi/client is loaded from index.html
-    googleLoginWindow(calendarID, apiKey);
+    // Commented out on October 5th to make other updates, but fulling expecting to uncomment this at some point, when I get around to figuring out how to cache the Google session key/credential
+    // gapiLoaded(); //inside the useEffect makes sure https://apis.google.com/js/api.js is loaded from index.html
+    // gisLoaded(); // inside the useEffect makes sure https://accounts.google.com/gsi/client is loaded from index.html
+    // googleLoginWindow(calendarID, apiKey);
   }, []);
   const stateGoogleCalEvents = useAppSelector(
     (state: any) => state.events.googleCalEvents
@@ -1579,48 +1586,136 @@ const EventDetails = (props: propsTypes) => {
                             </span>{" "}
                             {stateTheEvent.extraStuff &&
                               stateTheEvent.extraStuff.length > 0 && (
-                                <ul style={{ margin: "0px" }}>
+                                <ul
+                                  style={{ margin: "0px" }}
+                                  className="eventDetailsExtraStuff"
+                                >
                                   {stateTheEvent.extraStuff.map(
                                     (extraThing: string) => {
                                       switch (extraThing) {
                                         case "ice":
-                                          if (
-                                            values?.basePackage?.includesExtraStuff?.includes(
-                                              extraThing
-                                            )
-                                          ) {
-                                            return <li>{extraThing}</li>;
-                                          } else {
-                                            return (
-                                              <li>
-                                                {extraThing} (~
-                                                {stateTheEvent.guestCount * 2}
-                                                lbs:{" "}
-                                                <strong>
-                                                  +$
-                                                  {stateTheEvent.guestCount * 2}
-                                                </strong>
-                                                )
-                                              </li>
-                                            );
-                                          } //2lbs per person // $1/lb.
+                                          return (
+                                            <li>
+                                              <FormControlLabel
+                                                control={
+                                                  <Checkbox
+                                                    checked={
+                                                      values.isChecked?.[
+                                                        extraThing
+                                                      ]
+                                                    }
+                                                    inputProps={{
+                                                      "aria-label":
+                                                        "controlled",
+                                                    }}
+                                                    onChange={() =>
+                                                      setFieldValue(
+                                                        `isChecked[${extraThing}]`,
+                                                        values.isChecked &&
+                                                          !values.isChecked?.[
+                                                            extraThing
+                                                          ]
+                                                      )
+                                                    }
+                                                    // disabled={values?.basePackage?.includesExtraStuff?.includes(
+                                                    //   extraThing
+                                                    // )}
+                                                  />
+                                                }
+                                                label={
+                                                  <>
+                                                    {extraThing} (~
+                                                    {stateTheEvent.guestCount *
+                                                      2}
+                                                    lbs:{" "}
+                                                    <strong>
+                                                      +$
+                                                      {stateTheEvent.guestCount *
+                                                        2}
+                                                    </strong>
+                                                    )
+                                                  </>
+                                                }
+                                                sx={{
+                                                  "& .MuiTypography-root": {
+                                                    fontFamily: "Bree",
+                                                  },
+
+                                                  "& .MuiCheckbox-root": {
+                                                    padding: "2px",
+                                                  },
+                                                }}
+                                                className="miniBar"
+                                              />
+                                            </li>
+                                          ); //2lbs per person // $1/lb.
                                         case "Mini Bar (4'x5' portable bar)":
                                           if (
                                             values?.basePackage?.includesExtraStuff?.includes(
                                               extraThing
                                             )
                                           ) {
-                                            return <li>{extraThing}</li>;
+                                            return (
+                                              <li>
+                                                <FormControlLabel
+                                                  control={<Checkbox />}
+                                                  label={extraThing}
+                                                  sx={{
+                                                    "& .MuiTypography-root": {
+                                                      fontFamily: "Bree",
+                                                    },
+
+                                                    "& .MuiCheckbox-root": {
+                                                      padding: "2px",
+                                                    },
+                                                  }}
+                                                  className="miniBar"
+                                                />
+                                              </li>
+                                            );
                                           } else {
                                             return (
                                               <li>
-                                                {extraThing} (
-                                                <strong>+$125</strong>)
+                                                <FormControlLabel
+                                                  control={<Checkbox />}
+                                                  label={
+                                                    <>
+                                                      {extraThing} (
+                                                      <strong>+$125</strong>)
+                                                    </>
+                                                  }
+                                                  sx={{
+                                                    "& .MuiTypography-root": {
+                                                      fontFamily: "Bree",
+                                                    },
+
+                                                    "& .MuiCheckbox-root": {
+                                                      padding: "2px",
+                                                    },
+                                                  }}
+                                                  className="miniBar"
+                                                />
                                               </li>
                                             );
                                           }
                                         default:
-                                          return <li>{extraThing}</li>;
+                                          return (
+                                            <li>
+                                              <FormControlLabel
+                                                control={<Checkbox />}
+                                                label={<>{extraThing}</>}
+                                                sx={{
+                                                  "& .MuiTypography-root": {
+                                                    fontFamily: "Bree",
+                                                  },
+                                                  "& .MuiCheckbox-root": {
+                                                    padding: "2px",
+                                                  },
+                                                }}
+                                                className="miniBar"
+                                              />
+                                            </li>
+                                          );
                                       }
                                     }
                                   )}

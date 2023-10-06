@@ -7,6 +7,7 @@ import { useAppSelector } from "../reducers/hooks";
 
 import _ from "lodash";
 import { Cocktail } from "../types/Cocktail";
+import EditGroceryItem from "./EditGroceryItem";
 
 type IngredientCollection = {
   item?: string;
@@ -355,9 +356,13 @@ const GroceryList = () => {
 
         if (amountOfThisItem) {
           return (
-            <Typography component="li">
-              {amountOfThisItem}oz of {mixerCalcd.item}
-            </Typography>
+            <>
+              <EditGroceryItem groceryItem={mixerCalcd}></EditGroceryItem>
+              <hr />
+              <Typography component="li">
+                {amountOfThisItem}oz of {mixerCalcd.item}
+              </Typography>
+            </>
           );
         }
       }

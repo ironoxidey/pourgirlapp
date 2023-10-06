@@ -30,8 +30,10 @@ import {
   removeCocktail,
   removeWine,
   removeBeer,
+  setGroceryItemList,
 } from "../reducers/groceriesSlice";
 import { setCocktailList } from "../reducers/cocktailListSlice";
+
 // import { setEventsList } from "../reducers/eventListSlice";
 // import { setRightToMakeChanges } from "../reducers/appSlice";
 import { useAppSelector, useAppDispatch } from "../reducers/hooks";
@@ -127,6 +129,29 @@ const Dashboard = () => {
       function (response: any) {
         // console.log(response); // Success
         dispatch(setCocktailList(response.documents));
+        //setCocktails(response.documents);
+      },
+      function (error) {
+        console.log(error); // Failure
+      }
+    );
+
+    const groceryItems = databases.listDocuments(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID, //database_id
+      import.meta.env.VITE_APPWRITE_GROCERY_ITEMS_COLLECTION_ID, //collection_id - groceryItems
+      [Query.orderAsc("container"), Query.orderAsc("title"), Query.limit(100)] // queries
+      // 100, // limit
+      // 0, // offset
+      // '', // cursor
+      // 'after', // cursorDirection
+      // ['category', 'name'], // orderAttributes
+      // ['ASC', 'ASC'] // orderTypes
+    );
+
+    groceryItems.then(
+      function (response: any) {
+        // console.log(response); // Success
+        dispatch(setGroceryItemList(response.documents));
         //setCocktails(response.documents);
       },
       function (error) {

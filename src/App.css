@@ -46,6 +46,10 @@ body {
   color: var(--green);
 }
 
+.eventDetailsExtraStuff {
+  list-style: none;
+}
+
 input {
   background-color: transparent;
 }

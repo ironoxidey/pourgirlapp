@@ -3,17 +3,20 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Cocktail } from "../types/Cocktail";
 import { Wine } from "../types/Wine";
 import { Beer } from "../types/Beer";
+import { GroceryItem } from "../types/GroceryItem";
 
 type GroceriesState = {
   cocktails: Cocktail[];
   wines: Wine[];
   beers: Beer[];
+  items: GroceryItem[];
 };
 
 const initialState: GroceriesState = {
   cocktails: [],
   wines: [],
   beers: [],
+  items: [],
 };
 
 //This was really helpful when setting this up: https://redux-toolkit.js.org/usage/usage-with-typescript
@@ -110,6 +113,14 @@ export const groceriesSlice = createSlice({
         }
       });
     },
+    setGroceryItemList: (state, action: PayloadAction<GroceryItem[]>) => {
+      // Redux Toolkit allows us to write "mutating" logic in reducers. It
+      // doesn't actually mutate the state because it uses the immer library,
+      // which detects changes to a "draft state" and produces a brand new
+      // immutable state based off those changes
+
+      state.items = action.payload;
+    },
   },
 });
 
@@ -124,6 +135,7 @@ export const {
   addBeer,
   updateBeer,
   removeBeer,
+  setGroceryItemList,
 } = groceriesSlice.actions;
 
 export default groceriesSlice.reducer;
