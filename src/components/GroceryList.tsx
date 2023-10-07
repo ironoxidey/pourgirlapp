@@ -295,8 +295,8 @@ const GroceryList = () => {
                 measureBy="mL"
                 amountOfThisItem={amountOfThisItem}
               ></EditGroceryItem>
-              <hr />
-              <Typography component="li">
+
+              <Typography component="li" sx={{ fontSize: ".5em" }}>
                 {bottles} {bottles === 1 ? "bottle" : "bottles"} (750mL) of{" "}
                 {liquorCalcd.item}
               </Typography>
@@ -323,7 +323,7 @@ const GroceryList = () => {
       }) => {
         const bottles = Math.ceil(wine.servings / 5); //should give me the number of bottles, 5 servings per 750mL bottle
         return (
-          <Typography component="li">
+          <Typography component="li" sx={{ fontSize: ".5em" }}>
             {bottles} {bottles === 1 ? "bottle" : "bottles"} (750mL) of{" "}
             {wine.name}
           </Typography>
@@ -346,7 +346,7 @@ const GroceryList = () => {
           | undefined;
       }) => {
         return (
-          <Typography component="li">
+          <Typography component="li" sx={{ fontSize: ".5em" }}>
             {beer.servings} {beer.name}
           </Typography>
         );
@@ -376,8 +376,8 @@ const GroceryList = () => {
                 measureBy="oz"
                 amountOfThisItem={amountOfThisItem}
               ></EditGroceryItem>
-              <hr />
-              <Typography component="li">
+
+              <Typography component="li" sx={{ fontSize: ".5em" }}>
                 {amountOfThisItem}oz of {mixerCalcd.item}
               </Typography>
             </>
@@ -425,8 +425,8 @@ const GroceryList = () => {
                     measureBy={garnishCalcd.units}
                     amountOfThisItem={amountOfThisItem}
                   ></EditGroceryItem>
-                  <hr />
-                  <Typography component="li">
+
+                  <Typography component="li" sx={{ fontSize: ".5em" }}>
                     {Math.ceil(amountOfThisItem)}{" "}
                     {amountOfThisItem > 1
                       ? pluralize(garnishCalcd.item)
@@ -445,8 +445,10 @@ const GroceryList = () => {
                     measureBy={garnishCalcd.units}
                     amountOfThisItem={amountOfThisItem}
                   ></EditGroceryItem>
-                  <hr />
-                  <Typography component="li">{garnishCalcd.item}</Typography>
+
+                  <Typography component="li" sx={{ fontSize: ".5em" }}>
+                    {garnishCalcd.item}
+                  </Typography>
                 </>
               );
             }
@@ -461,8 +463,8 @@ const GroceryList = () => {
                   measureBy={garnishCalcd.units}
                   amountOfThisItem={amountOfThisItem}
                 ></EditGroceryItem>
-                <hr />
-                <Typography component="li">
+
+                <Typography component="li" sx={{ fontSize: ".5em" }}>
                   {amountOfThisItem}{" "}
                   {garnishCalcd.units && amountOfThisItem > 1
                     ? pluralize(garnishCalcd.units)
@@ -483,8 +485,8 @@ const GroceryList = () => {
                   measureBy={garnishCalcd.units}
                   amountOfThisItem={amountOfThisItem}
                 ></EditGroceryItem>
-                <hr />
-                <Typography component="li">
+
+                <Typography component="li" sx={{ fontSize: ".5em" }}>
                   {amountOfThisItem}{" "}
                   {amountOfThisItem > 1
                     ? pluralize(garnishCalcd.item)
@@ -494,7 +496,7 @@ const GroceryList = () => {
             );
           }
         } else {
-          //   return <Typography component="li">{garnishCalcd.item}</Typography>;
+          //   return <Typography component="li" sx={{fontSize: '.5em'}}>{garnishCalcd.item}</Typography>;
         }
       }
     });
@@ -510,7 +512,7 @@ const GroceryList = () => {
         return cocktail.extraIngredients.map((ingredient: string) => {
           if (ingredient) {
             return (
-              <Typography component="li">
+              <Typography component="li" sx={{ fontSize: ".5em" }}>
                 enough {ingredient} for {cocktail.servings} servings
               </Typography>
             );

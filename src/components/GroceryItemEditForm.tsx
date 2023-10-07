@@ -49,41 +49,8 @@ const GroceryItemEditForm = ({
   dialogHandleClose: Function;
   theGroceryItem: GroceryItem | undefined;
 }) => {
-  const stateGroceryItemsList = useAppSelector(
-    (state: any) => state.groceries.items
-  );
-
-  // const { setFieldValue, resetForm } = useFormikContext();
-
-  // const formik = useFormikContext();
-
-  // useEffect(() => {
-  //   // console.log("useFormikContext", formik);
-  //   if (theGroceryItem && theGroceryItem.title && setFieldValue) {
-  //     setFieldValue("title", theGroceryItem.title);
-  //     resetForm({ values: theGroceryItem });
-  //   }
-  // }, [theGroceryItem]);
-
   const [formError, setFormError] = useState("");
-
   const dispatch = useAppDispatch();
-
-  const handleOnChange = useDebouncedCallback(
-    (groceryItem: any, servings: any) => {
-      //console.log("handleOnChange", groceryItem);
-      // dispatch(
-      // 	updateCocktail({
-      // 		...groceryItem,
-      // 		servings,
-      // 		index: props.cIndex - 1,
-      // 		fieldID: props.fieldID,
-      // 	})
-      // );
-    },
-    150
-  );
-
   const onSubmit = (values: GroceryItem) => {
     //console.log("form values being sent to database", values);
     const theGroceryItem = {
@@ -93,7 +60,7 @@ const GroceryItemEditForm = ({
       container: values.container,
       unitsPerContainer: values.unitsPerContainer,
       servingsPerContainer: values.servingsPerContainer,
-      whereToBuy: values.whereToBuy,
+      whereToBuy: values.whereToBuy || [""],
       avgPrice: values.avgPrice,
     };
     let promise;
@@ -130,6 +97,74 @@ const GroceryItemEditForm = ({
       }
     );
   };
+  return (
+    <Formik
+      initialValues={{
+        ...INITIAL_FORM_STATE,
+      }}
+      enableReinitialize
+      onSubmit={(values) => {
+        onSubmit(values);
+      }}
+    >
+      {({ setFieldValue, values, resetForm }) => (
+        <GroceryItemEditFormContent
+          dialogHandleClose={dialogHandleClose}
+          theGroceryItem={theGroceryItem}
+          setFormError={setFormError}
+          dispatch={dispatch}
+          formError={formError}
+        />
+      )}
+    </Formik>
+  );
+};
+
+const GroceryItemEditFormContent = ({
+  dialogHandleClose,
+  theGroceryItem,
+  setFormError,
+  dispatch,
+  formError,
+}: {
+  dialogHandleClose: Function;
+  theGroceryItem: GroceryItem | undefined;
+  setFormError: Function;
+  dispatch: Function;
+  formError: string;
+}) => {
+  const stateGroceryItemsList = useAppSelector(
+    (state: any) => state.groceries.items
+  );
+
+  const { values, setFieldValue, resetForm, setValues } =
+    useFormikContext<GroceryItem>();
+
+  // const formik = useFormikContext();
+
+  useEffect(() => {
+    // console.log("theGroceryItem", theGroceryItem);
+    // console.log("values", values);
+
+    if (theGroceryItem && theGroceryItem.title) {
+      setValues(theGroceryItem);
+    }
+  }, [theGroceryItem]);
+
+  const handleOnChange = useDebouncedCallback(
+    (groceryItem: any, servings: any) => {
+      //console.log("handleOnChange", groceryItem);
+      // dispatch(
+      // 	updateCocktail({
+      // 		...groceryItem,
+      // 		servings,
+      // 		index: props.cIndex - 1,
+      // 		fieldID: props.fieldID,
+      // 	})
+      // );
+    },
+    150
+  );
 
   const onDelete = (groceryItemID: string) => {
     const promise = databases.deleteDocument(
@@ -153,350 +188,337 @@ const GroceryItemEditForm = ({
 
   return (
     <>
-      <Formik
-        initialValues={{
-          ...INITIAL_FORM_STATE,
-        }}
-        enableReinitialize
-        onSubmit={(values) => {
-          onSubmit(values);
-        }}
-      >
-        {({ setFieldValue, values, resetForm }) => (
-          <Form>
-            <Grid
-              className="GroceryItemEditform"
-              container
-              sx={{
-                alignItems: { sm: "flex-start", xs: "flex-start" },
-                flexDirection: "column",
-                width: "500px",
-                margin: "0 auto",
+      <Form>
+        <Grid
+          className="GroceryItemEditform"
+          container
+          sx={{
+            alignItems: { sm: "flex-start", xs: "flex-start" },
+            flexDirection: "column",
+            width: "500px",
+            margin: "0 auto",
+          }}
+        >
+          <Grid
+            item
+            className="title"
+            sx={{ margin: "8px 0px", width: "500px", maxWidth: "100%" }}
+          >
+            <Autocomplete
+              disableClearable
+              blurOnSelect
+              freeSolo
+              selectOnFocus
+              clearOnBlur
+              // defaultValue={values.title || ""}
+              value={values.title || ""}
+              options={[...stateGroceryItemsList, values]}
+              groupBy={(groceryItem: any) => groceryItem.container}
+              getOptionLabel={(groceryItem: any) => {
+                if (typeof groceryItem === "string") {
+                  return groceryItem;
+                }
+                if (groceryItem.inputValue) {
+                  return groceryItem.inputValue;
+                }
+                return groceryItem.title;
               }}
-            >
-              <Grid
-                item
-                className="title"
-                sx={{ margin: "8px 0px", width: "500px", maxWidth: "100%" }}
-              >
-                <Autocomplete
-                  disableClearable
-                  blurOnSelect
-                  freeSolo
-                  selectOnFocus
-                  clearOnBlur
-                  defaultValue={values.title || theGroceryItem?.title || ""}
-                  options={[...stateGroceryItemsList, values]}
-                  groupBy={(groceryItem: any) => groceryItem.container}
-                  getOptionLabel={(groceryItem: any) => {
-                    if (typeof groceryItem === "string") {
-                      return groceryItem;
-                    }
-                    if (groceryItem.inputValue) {
-                      return groceryItem.inputValue;
-                    }
-                    return groceryItem.title;
-                  }}
-                  onChange={(e: any, value: GroceryItem) => {
-                    // handleOnChange(value, servings);
-                    console.log("autocomplete onChange", value);
-                    console.log("autocomplete all values", values);
+              onChange={(e: any, value: GroceryItem) => {
+                // handleOnChange(value, servings);
+                console.log("autocomplete onChange", value);
+                console.log("autocomplete all values", values);
 
-                    if (typeof value === "string") {
-                      console.log("setFieldValue('title', value)", value);
-                      setFieldValue("title", value);
-                    } else if (
-                      value.inputValue ||
+                if (typeof value === "string") {
+                  console.log("setFieldValue('title', value)", value);
+                  setFieldValue("title", value);
+                } else if (
+                  value.inputValue ||
+                  values.inputValue ||
+                  value.title ||
+                  values.title
+                ) {
+                  console.log(
+                    "setFieldValue('title', value.title)",
+                    value.inputValue ||
                       values.inputValue ||
                       value.title ||
                       values.title
-                    ) {
-                      console.log(
-                        "setFieldValue('title', value.title)",
-                        value.inputValue ||
-                          values.inputValue ||
-                          value.title ||
-                          values.title
-                      );
-                      setFieldValue(
-                        "title",
-                        value.inputValue ||
-                          values.inputValue ||
-                          value.title ||
-                          values.title
-                      );
-                    } else {
-                      console.log(
-                        "setFieldValue('title', INITIAL_FORM_STATE.title)",
-                        INITIAL_FORM_STATE.title
-                      );
-                      setFieldValue("title", INITIAL_FORM_STATE.title);
-                    }
+                  );
+                  setFieldValue(
+                    "title",
+                    value.inputValue ||
+                      values.inputValue ||
+                      value.title ||
+                      values.title
+                  );
+                } else {
+                  console.log(
+                    "setFieldValue('title', INITIAL_FORM_STATE.title)",
+                    INITIAL_FORM_STATE.title
+                  );
+                  setFieldValue("title", INITIAL_FORM_STATE.title);
+                }
 
-                    if (_.find(stateGroceryItemsList, ["title", value.title])) {
-                      console.log(
-                        "_.find(stateGroceryItemsList, ['title', value.title])",
-                        _.find(stateGroceryItemsList, ["title", value.title])
-                      );
-                      //set all field values to the groceryItem selected
-                      resetForm({ values: value });
-                    }
+                if (_.find(stateGroceryItemsList, ["title", value.title])) {
+                  console.log(
+                    "_.find(stateGroceryItemsList, ['title', value.title])",
+                    _.find(stateGroceryItemsList, ["title", value.title])
+                  );
+                  //set all field values to the groceryItem selected
+                  resetForm({ values: value });
+                }
 
-                    //console.log('values.groceryItem', groceryItem);
-                  }}
-                  filterOptions={(options, params) => {
-                    const filtered = filter(options, params);
+                //console.log('values.groceryItem', groceryItem);
+              }}
+              filterOptions={(options, params) => {
+                const filtered = filter(options, params);
 
-                    const { inputValue } = params;
-                    // Suggest the creation of a new value
-                    const isExisting = options.some(
-                      (option) => inputValue === option.title
-                    );
-                    if (inputValue !== "" && !isExisting) {
-                      filtered.push({
-                        inputValue,
-                        //title: `Add "${inputValue}"`,
-                      });
-                    }
+                const { inputValue } = params;
+                // Suggest the creation of a new value
+                const isExisting = options.some(
+                  (option) => inputValue === option.title
+                );
+                if (inputValue !== "" && !isExisting) {
+                  filtered.push({
+                    inputValue,
+                    //title: `Add "${inputValue}"`,
+                  });
+                }
 
-                    return filtered;
-                  }}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props}>
-                      <Grid container alignItems="center">
-                        <Avatar src={option.img} sx={{ marginRight: "4px" }}>
-                          <LocalBarTwoToneIcon></LocalBarTwoToneIcon>
-                        </Avatar>
-                        <Typography
-                          sx={{
-                            margin: "0 4px",
-                          }}
-                        >
-                          {option.title || option.inputValue}
-                        </Typography>
-                      </Grid>
-                      {/* </Tooltip> */}
-                    </li>
+                return filtered;
+              }}
+              renderOption={(props, option, { selected }) => (
+                <li {...props}>
+                  <Grid container alignItems="center">
+                    <Avatar src={option.img} sx={{ marginRight: "4px" }}>
+                      <LocalBarTwoToneIcon></LocalBarTwoToneIcon>
+                    </Avatar>
+                    <Typography
+                      sx={{
+                        margin: "0 4px",
+                      }}
+                    >
+                      {option.title || option.inputValue}
+                    </Typography>
+                  </Grid>
+                  {/* </Tooltip> */}
+                </li>
+              )}
+              renderInput={(params: any) => (
+                <TextField
+                  {...params}
+                  sx={{ width: "100%" }}
+                  variant="standard"
+                  label={`Item Title`}
+                  name={"title"}
+                />
+              )}
+            ></Autocomplete>
+          </Grid>
+
+          <Grid
+            item
+            className="img"
+            sx={{ margin: "8px 0", width: "500px", maxWidth: "100%" }}
+          >
+            <TextFieldWrapper
+              name="img"
+              label="Image URL"
+              value={values.img || ""}
+            />
+          </Grid>
+          <Grid
+            container
+            className="itemPicAndDetails"
+            sx={{ flexDirection: "row" }}
+          >
+            <Grid item className="itemPic">
+              <img src={values.img || ""} alt="" style={{ width: "225px" }} />
+            </Grid>
+            <Grid
+              container
+              item
+              className="itemDetails"
+              sx={{ flexDirection: "column", width: "auto" }}
+            >
+              <Grid
+                item
+                className="unit"
+                sx={{
+                  margin: "8px 0",
+                  // width: "500px",
+                  maxWidth: "100%",
+                  // alignItems: "flex-end",
+                  // justifyContent: "space-between",
+                }}
+              >
+                <Autocomplete
+                  sx={{ width: "100%" }}
+                  //id={'unit' + props.cIndex}
+                  disableClearable
+                  blurOnSelect
+                  value={values.unit || ""}
+                  options={_.sortBy(
+                    _.uniq(
+                      _.map(stateGroceryItemsList, (groceryItem) => {
+                        if (groceryItem.unit) {
+                          return groceryItem.unit;
+                        } else return "";
+                      })
+                    )
                   )}
+                  freeSolo
+                  //getOptionLabel={(unit: string) => unit}
+                  onChange={(e: any, value: any) => {
+                    //console.log(value);
+                    setFieldValue(
+                      "unit",
+                      value !== null ? value : INITIAL_FORM_STATE.unit
+                    );
+                    //console.log('values.unit', unit);
+                  }}
                   renderInput={(params: any) => (
-                    <TextField
+                    <TextFieldWrapper
                       {...params}
                       sx={{ width: "100%" }}
                       variant="standard"
-                      label={`Item Title`}
-                      name={"title"}
+                      label={`Unit of measurement`}
+                      name={"unit"}
                     />
                   )}
                 ></Autocomplete>
               </Grid>
-
               <Grid
                 item
-                className="img"
-                sx={{ margin: "8px 0", width: "500px", maxWidth: "100%" }}
+                container
+                className="container"
+                sx={{
+                  margin: "8px 0",
+                  // width: "500px",
+                  maxWidth: "100%",
+                  // alignItems: "flex-end",
+                  // justifyContent: "space-between",
+                }}
+              >
+                <Autocomplete
+                  sx={{ width: "100%" }}
+                  //id={'container' + props.cIndex}
+                  disableClearable
+                  blurOnSelect
+                  value={values.container || ""}
+                  options={_.sortBy(
+                    _.uniq(
+                      _.map(stateGroceryItemsList, (groceryItem) => {
+                        if (groceryItem.container) {
+                          return groceryItem.container;
+                        } else return "";
+                      })
+                    )
+                  )}
+                  freeSolo
+                  //getOptionLabel={(container: string) => container}
+                  onChange={(e: any, value: any) => {
+                    //console.log(value);
+                    setFieldValue(
+                      "container",
+                      value !== null ? value : INITIAL_FORM_STATE.container
+                    );
+                    //console.log('values.container', container);
+                  }}
+                  renderInput={(params: any) => (
+                    <TextFieldWrapper
+                      {...params}
+                      sx={{ width: "100%" }}
+                      variant="standard"
+                      label={`Container Type`}
+                      name={"container"}
+                    />
+                  )}
+                ></Autocomplete>
+              </Grid>
+              <Grid
+                item
+                sx={{
+                  margin: "8px 0",
+                }}
               >
                 <TextFieldWrapper
-                  name="img"
-                  label="Image URL"
-                  value={values.img || ""}
+                  name="unitsPerContainer"
+                  // placeholder="Units Per Container"
+                  type="number"
+                  value={values.unitsPerContainer || ""}
+                  label={
+                    values.unit && values.container
+                      ? values.unit + ` per ` + values.container
+                      : `Units per Container`
+                  }
+                  // inputProps={{
+                  //   step: 0.1,
+                  // }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        {values.unit}
+                      </InputAdornment>
+                    ),
+                  }}
+                  onChange={(value: number) =>
+                    setFieldValue(
+                      "unitsPerContainer",
+                      value !== null
+                        ? value
+                        : INITIAL_FORM_STATE.unitsPerContainer
+                    )
+                  }
                 />
               </Grid>
               <Grid
-                container
-                className="itemPicAndDetails"
-                sx={{ flexDirection: "row" }}
-              >
-                <Grid item className="itemPic">
-                  <img
-                    src={values.img || ""}
-                    alt=""
-                    style={{ width: "225px" }}
-                  />
-                </Grid>
-                <Grid
-                  container
-                  item
-                  className="itemDetails"
-                  sx={{ flexDirection: "column", width: "auto" }}
-                >
-                  <Grid
-                    item
-                    className="unit"
-                    sx={{
-                      margin: "8px 0",
-                      // width: "500px",
-                      maxWidth: "100%",
-                      // alignItems: "flex-end",
-                      // justifyContent: "space-between",
-                    }}
-                  >
-                    <Autocomplete
-                      sx={{ width: "100%" }}
-                      //id={'unit' + props.cIndex}
-                      disableClearable
-                      blurOnSelect
-                      value={values.unit || ""}
-                      options={_.sortBy(
-                        _.uniq(
-                          _.map(stateGroceryItemsList, (groceryItem) => {
-                            if (groceryItem.unit) {
-                              return groceryItem.unit;
-                            } else return "";
-                          })
-                        )
-                      )}
-                      freeSolo
-                      //getOptionLabel={(unit: string) => unit}
-                      onChange={(e: any, value: any) => {
-                        //console.log(value);
-                        setFieldValue(
-                          "unit",
-                          value !== null ? value : INITIAL_FORM_STATE.unit
-                        );
-                        //console.log('values.unit', unit);
-                      }}
-                      renderInput={(params: any) => (
-                        <TextFieldWrapper
-                          {...params}
-                          sx={{ width: "100%" }}
-                          variant="standard"
-                          label={`Unit of measurement`}
-                          name={"unit"}
-                        />
-                      )}
-                    ></Autocomplete>
-                  </Grid>
-                  <Grid
-                    item
-                    container
-                    className="container"
-                    sx={{
-                      margin: "8px 0",
-                      // width: "500px",
-                      maxWidth: "100%",
-                      // alignItems: "flex-end",
-                      // justifyContent: "space-between",
-                    }}
-                  >
-                    <Autocomplete
-                      sx={{ width: "100%" }}
-                      //id={'container' + props.cIndex}
-                      disableClearable
-                      blurOnSelect
-                      value={values.container || ""}
-                      options={_.sortBy(
-                        _.uniq(
-                          _.map(stateGroceryItemsList, (groceryItem) => {
-                            if (groceryItem.container) {
-                              return groceryItem.container;
-                            } else return "";
-                          })
-                        )
-                      )}
-                      freeSolo
-                      //getOptionLabel={(container: string) => container}
-                      onChange={(e: any, value: any) => {
-                        //console.log(value);
-                        setFieldValue(
-                          "container",
-                          value !== null ? value : INITIAL_FORM_STATE.container
-                        );
-                        //console.log('values.container', container);
-                      }}
-                      renderInput={(params: any) => (
-                        <TextFieldWrapper
-                          {...params}
-                          sx={{ width: "100%" }}
-                          variant="standard"
-                          label={`Container Type`}
-                          name={"container"}
-                        />
-                      )}
-                    ></Autocomplete>
-                  </Grid>
-                  <Grid
-                    item
-                    sx={{
-                      margin: "8px 0",
-                    }}
-                  >
-                    <TextFieldWrapper
-                      name="unitsPerContainer"
-                      // placeholder="Units Per Container"
-                      type="number"
-                      value={values.unitsPerContainer || ""}
-                      label={
-                        values.unit && values.container
-                          ? values.unit + ` per ` + values.container
-                          : `Units per Container`
-                      }
-                      // inputProps={{
-                      //   step: 0.1,
-                      // }}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            {values.unit}
-                          </InputAdornment>
-                        ),
-                      }}
-                      onChange={(value: number) =>
-                        setFieldValue(
-                          "unitsPerContainer",
-                          value !== null
-                            ? value
-                            : INITIAL_FORM_STATE.unitsPerContainer
-                        )
-                      }
-                    />
-                  </Grid>
-                  <Grid
-                    item
-                    sx={{
-                      margin: "8px 0",
-                      display: "flex",
+                item
+                sx={{
+                  margin: "8px 0",
+                  display: "flex",
 
-                      alignItems: "center",
-                    }}
-                  >
-                    <TextFieldWrapper
-                      name="avgPrice"
-                      type="number"
-                      value={values.avgPrice || ""}
-                      label="Average Price"
-                      // inputProps={{
-                      //   step: 0.1,
-                      // }}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">$</InputAdornment>
-                        ),
-                      }}
-                      onChange={(value: number) =>
-                        setFieldValue(
-                          "avgPrice",
-                          value !== null ? value : INITIAL_FORM_STATE.avgPrice
-                        )
-                      }
-                    />
-                  </Grid>
-                </Grid>
+                  alignItems: "center",
+                }}
+              >
+                <TextFieldWrapper
+                  name="avgPrice"
+                  type="number"
+                  value={values.avgPrice || ""}
+                  label="Average Price"
+                  // inputProps={{
+                  //   step: 0.1,
+                  // }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">$</InputAdornment>
+                    ),
+                  }}
+                  onChange={(value: number) =>
+                    setFieldValue(
+                      "avgPrice",
+                      value !== null ? value : INITIAL_FORM_STATE.avgPrice
+                    )
+                  }
+                />
               </Grid>
-              <>
-                {values.whereToBuy?.map((value, index) => {
-                  return (
-                    <ArrayFormField
-                      key={index}
-                      index={index}
-                      label="Where to Buy"
-                      field="whereToBuy"
-                      value={value}
-                      values={values}
-                      setFieldValue={setFieldValue}
-                    ></ArrayFormField>
-                  );
-                })}
-                {/* {values.extraIngredients?.map((value, index) => {
+            </Grid>
+          </Grid>
+          <>
+            {values.whereToBuy?.map((value, index) => {
+              return (
+                <ArrayFormField
+                  key={index}
+                  index={index}
+                  label="Where to Buy"
+                  field="whereToBuy"
+                  value={value}
+                  values={values}
+                  setFieldValue={setFieldValue}
+                ></ArrayFormField>
+              );
+            })}
+            {/* {values.extraIngredients?.map((value, index) => {
                   return (
                     <IngredientFormField
                       key={index}
@@ -523,8 +545,8 @@ const GroceryItemEditForm = ({
                   ); 
                 })}
                 */}
-              </>
-              {/* <Grid
+          </>
+          {/* <Grid
                 item
                 className="recipe"
                 sx={{ margin: "8px 0px", width: "500px", maxWidth: "100%" }}
@@ -536,63 +558,61 @@ const GroceryItemEditForm = ({
                   value={values.recipe || ""}
                 />
               </Grid> */}
-            </Grid>
-            {/* END .GroceryItemEditForm */}
-            <Grid
-              container
-              sx={{ margin: "8px auto", width: "500px", maxWidth: "100%" }}
+        </Grid>
+        {/* END .GroceryItemEditForm */}
+        <Grid
+          container
+          sx={{ margin: "8px auto", width: "500px", maxWidth: "100%" }}
+        >
+          <Button
+            type="submit"
+            sx={{
+              margin: "0 auto",
+              textAlign: "center",
+              fontFamily: "Bree",
+              fontWeight: "600",
+              textTransform: "capitalize",
+              color: "var(--purple)",
+              border: "2px solid var(--purple)",
+              backgroundColor: "transparent",
+              minWidth: "250px",
+              "&:hover": {
+                backgroundColor: "var(--purple)",
+                color: "#fff",
+              },
+            }}
+            // onClick={(values) => {
+            // 	onSubmit(values as GroceryItem);
+            // }}
+          >
+            {values.$id ? (
+              <>Update {values.title}</>
+            ) : (
+              <>Create {values.title}</>
+            )}
+          </Button>
+          {values.$id && (
+            <IconButton
+              onClick={() => {
+                if (values.$id) {
+                  onDelete(values.$id);
+                }
+              }}
+              sx={{
+                "&:hover": { backgroundColor: "rgba(255, 0, 51, 0.08)" },
+              }}
             >
-              <Button
-                type="submit"
-                sx={{
-                  margin: "0 auto",
-                  textAlign: "center",
-                  fontFamily: "Bree",
-                  fontWeight: "600",
-                  textTransform: "capitalize",
-                  color: "var(--purple)",
-                  border: "2px solid var(--purple)",
-                  backgroundColor: "transparent",
-                  minWidth: "250px",
-                  "&:hover": {
-                    backgroundColor: "var(--purple)",
-                    color: "#fff",
-                  },
-                }}
-                // onClick={(values) => {
-                // 	onSubmit(values as GroceryItem);
-                // }}
-              >
-                {values.$id ? (
-                  <>Update {values.title}</>
-                ) : (
-                  <>Create {values.title}</>
-                )}
-              </Button>
-              {values.$id && (
-                <IconButton
-                  onClick={() => {
-                    if (values.$id) {
-                      onDelete(values.$id);
-                    }
-                  }}
-                  sx={{
-                    "&:hover": { backgroundColor: "rgba(255, 0, 51, 0.08)" },
-                  }}
-                >
-                  <DeleteForeverIcon sx={{ color: "red" }}></DeleteForeverIcon>
-                </IconButton>
-              )}
+              <DeleteForeverIcon sx={{ color: "red" }}></DeleteForeverIcon>
+            </IconButton>
+          )}
 
-              {formError && (
-                <Grid item>
-                  <Typography sx={{ color: "red" }}>{formError}</Typography>
-                </Grid>
-              )}
+          {formError && (
+            <Grid item>
+              <Typography sx={{ color: "red" }}>{formError}</Typography>
             </Grid>
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Grid>
+      </Form>
     </>
   );
 };

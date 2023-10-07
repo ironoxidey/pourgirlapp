@@ -110,6 +110,7 @@ const EditGroceryItem = (props: propsTypes) => {
     return response;
   };
 
+  const [initialValues, setInitialValues] = useState(false);
   const [computedGroceryItem, setComputedGroceryItem] = useState<string>();
   const [theMatchingGroceryItem, setTheMatchingGroceryItem] =
     useState<GroceryItem>();
@@ -122,6 +123,7 @@ const EditGroceryItem = (props: propsTypes) => {
         })
       );
       console.log("theMatchingGroceryItem", theMatchingGroceryItem);
+
       let numContainers;
       if (
         theMatchingGroceryItem &&
@@ -242,6 +244,19 @@ const EditGroceryItem = (props: propsTypes) => {
           }`
         );
       }
+
+      console.log("initial values", initialValues);
+    }
+  }, [props, props.ingredient, props.ingredient?.amountOz]);
+
+  useEffect(() => {
+    if (!theMatchingGroceryItem && props.item && props.measureBy) {
+      setTheMatchingGroceryItem({
+        title: props.item,
+        unit: props.measureBy,
+        whereToBuy: [""],
+      });
+      setInitialValues(true);
     }
   }, [
     props,
@@ -272,14 +287,27 @@ const EditGroceryItem = (props: propsTypes) => {
 
       {computedGroceryItem ? (
         <>
-          <Grid container onClick={() => setDialogOpen(true)}>
+          <Grid
+            container
+            sx={{
+              flexDirection: "row",
+              flexWrap: "nowrap",
+              alignItems: "center",
+              cursor: "pointer",
+            }}
+            onClick={() => setDialogOpen(true)}
+          >
             {theMatchingGroceryItem?.img && (
               <img
                 src={theMatchingGroceryItem?.img}
-                style={{ width: "30px", marginRight: "4px" }}
+                style={{
+                  width: "30px",
+                  marginRight: "4px",
+                  display: "inline",
+                }}
               ></img>
             )}
-            {computedGroceryItem}
+            <Grid item>{computedGroceryItem}</Grid>
           </Grid>
         </>
       ) : (
