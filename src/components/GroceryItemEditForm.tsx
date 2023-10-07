@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Form, Formik } from "formik";
+import { Form, Formik, useFormikContext } from "formik";
 import _ from "lodash";
 import { v4 as uuid } from "uuid";
 
@@ -44,12 +44,26 @@ const filter = createFilterOptions<GroceryItem>();
 
 const GroceryItemEditForm = ({
   dialogHandleClose,
+  theGroceryItem,
 }: {
-  dialogHandleClose: any;
+  dialogHandleClose: Function;
+  theGroceryItem: GroceryItem | undefined;
 }) => {
   const stateGroceryItemsList = useAppSelector(
     (state: any) => state.groceries.items
   );
+
+  // const { setFieldValue, resetForm } = useFormikContext();
+
+  // const formik = useFormikContext();
+
+  // useEffect(() => {
+  //   // console.log("useFormikContext", formik);
+  //   if (theGroceryItem && theGroceryItem.title && setFieldValue) {
+  //     setFieldValue("title", theGroceryItem.title);
+  //     resetForm({ values: theGroceryItem });
+  //   }
+  // }, [theGroceryItem]);
 
   const [formError, setFormError] = useState("");
 
@@ -154,8 +168,10 @@ const GroceryItemEditForm = ({
               className="GroceryItemEditform"
               container
               sx={{
-                alignItems: { sm: "center", xs: "flex-start" },
+                alignItems: { sm: "flex-start", xs: "flex-start" },
                 flexDirection: "column",
+                width: "500px",
+                margin: "0 auto",
               }}
             >
               <Grid
@@ -169,7 +185,7 @@ const GroceryItemEditForm = ({
                   freeSolo
                   selectOnFocus
                   clearOnBlur
-                  defaultValue={values.title || ""}
+                  defaultValue={values.title || theGroceryItem?.title || ""}
                   options={[...stateGroceryItemsList, values]}
                   groupBy={(groceryItem: any) => groceryItem.container}
                   getOptionLabel={(groceryItem: any) => {
@@ -203,7 +219,7 @@ const GroceryItemEditForm = ({
                           values.title
                       );
                       setFieldValue(
-                        "name",
+                        "title",
                         value.inputValue ||
                           values.inputValue ||
                           value.title ||
@@ -273,6 +289,7 @@ const GroceryItemEditForm = ({
                   )}
                 ></Autocomplete>
               </Grid>
+
               <Grid
                 item
                 className="img"
@@ -285,159 +302,186 @@ const GroceryItemEditForm = ({
                 />
               </Grid>
               <Grid
-                item
-                className="unit"
-                sx={{ margin: "8px 0", width: "500px", maxWidth: "100%" }}
-              >
-                <Autocomplete
-                  sx={{ width: "100%" }}
-                  //id={'unit' + props.cIndex}
-                  disableClearable
-                  blurOnSelect
-                  value={values.unit || ""}
-                  options={[
-                    "Mezcal",
-                    "Tequila",
-                    "Gin",
-                    "Vodka",
-                    "Whiskey",
-                    "Rum",
-                    "Low ABV Cocktails",
-                  ]}
-                  getOptionLabel={(unit: string) => unit}
-                  onChange={(e: any, value: any) => {
-                    //console.log(value);
-                    setFieldValue(
-                      "unit",
-                      value !== null ? value : INITIAL_FORM_STATE.unit
-                    );
-                    //console.log('values.unit', unit);
-                  }}
-                  renderInput={(params: any) => (
-                    <TextFieldWrapper
-                      {...params}
-                      sx={{ width: "100%" }}
-                      variant="standard"
-                      label={`Unit of measurement`}
-                      name={"unit"}
-                    />
-                  )}
-                ></Autocomplete>
-              </Grid>
-              {/* <Grid
                 container
-                className="container"
-                flexDirection="row"
-                sx={{ margin: "8px 0", width: "500px", maxWidth: "100%" }}
+                className="itemPicAndDetails"
+                sx={{ flexDirection: "row" }}
               >
-                <Grid item>
-                  <Typography sx={{ margin: "3px 8px 0 0" }}>
-                    Container Type:
-                  </Typography>
-                </Grid>
-                <Grid item xs={4} sm={2}>
-                  <TextFieldWrapper
-                    name="container"
-                    placeholder="Container Type"
-                    // type="number"
-                    value={values.container || ""}
-                    // inputProps={{
-                    //   step: 0.5,
-                    // }}
-                    // InputProps={{
-                    //   endAdornment: (
-                    //     <InputAdornment position="end">oz.</InputAdornment>
-                    //   ),
-                    // }}
-                    onChange={(value: number) =>
-                      setFieldValue(
-                        "container",
-                        value !== null ? value : INITIAL_FORM_STATE.container
-                      )
-                    }
+                <Grid item className="itemPic">
+                  <img
+                    src={values.img || ""}
+                    alt=""
+                    style={{ width: "225px" }}
                   />
                 </Grid>
-              </Grid> */}
-              <Grid
-                item
-                container
-                className="container"
-                sx={{
-                  margin: "8px 0",
-                  width: "500px",
-                  maxWidth: "100%",
-                  alignItems: "flex-end",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Autocomplete
-                  sx={{ width: "100%" }}
-                  //id={'container' + props.cIndex}
-                  disableClearable
-                  blurOnSelect
-                  value={values.container || ""}
-                  options={_.sortBy(
-                    _.uniq(
-                      _.map(stateGroceryItemsList, (groceryItem) => {
-                        if (groceryItem.container) {
-                          return groceryItem.container;
-                        } else return "";
-                      })
-                    )
-                  )}
-                  freeSolo
-                  //getOptionLabel={(container: string) => container}
-                  onChange={(e: any, value: any) => {
-                    //console.log(value);
-                    setFieldValue(
-                      "container",
-                      value !== null ? value : INITIAL_FORM_STATE.container
-                    );
-                    //console.log('values.container', container);
-                  }}
-                  renderInput={(params: any) => (
-                    <TextFieldWrapper
-                      {...params}
+                <Grid
+                  container
+                  item
+                  className="itemDetails"
+                  sx={{ flexDirection: "column", width: "auto" }}
+                >
+                  <Grid
+                    item
+                    className="unit"
+                    sx={{
+                      margin: "8px 0",
+                      // width: "500px",
+                      maxWidth: "100%",
+                      // alignItems: "flex-end",
+                      // justifyContent: "space-between",
+                    }}
+                  >
+                    <Autocomplete
                       sx={{ width: "100%" }}
-                      variant="standard"
-                      label={`Container Type`}
-                      name={"container"}
+                      //id={'unit' + props.cIndex}
+                      disableClearable
+                      blurOnSelect
+                      value={values.unit || ""}
+                      options={_.sortBy(
+                        _.uniq(
+                          _.map(stateGroceryItemsList, (groceryItem) => {
+                            if (groceryItem.unit) {
+                              return groceryItem.unit;
+                            } else return "";
+                          })
+                        )
+                      )}
+                      freeSolo
+                      //getOptionLabel={(unit: string) => unit}
+                      onChange={(e: any, value: any) => {
+                        //console.log(value);
+                        setFieldValue(
+                          "unit",
+                          value !== null ? value : INITIAL_FORM_STATE.unit
+                        );
+                        //console.log('values.unit', unit);
+                      }}
+                      renderInput={(params: any) => (
+                        <TextFieldWrapper
+                          {...params}
+                          sx={{ width: "100%" }}
+                          variant="standard"
+                          label={`Unit of measurement`}
+                          name={"unit"}
+                        />
+                      )}
+                    ></Autocomplete>
+                  </Grid>
+                  <Grid
+                    item
+                    container
+                    className="container"
+                    sx={{
+                      margin: "8px 0",
+                      // width: "500px",
+                      maxWidth: "100%",
+                      // alignItems: "flex-end",
+                      // justifyContent: "space-between",
+                    }}
+                  >
+                    <Autocomplete
+                      sx={{ width: "100%" }}
+                      //id={'container' + props.cIndex}
+                      disableClearable
+                      blurOnSelect
+                      value={values.container || ""}
+                      options={_.sortBy(
+                        _.uniq(
+                          _.map(stateGroceryItemsList, (groceryItem) => {
+                            if (groceryItem.container) {
+                              return groceryItem.container;
+                            } else return "";
+                          })
+                        )
+                      )}
+                      freeSolo
+                      //getOptionLabel={(container: string) => container}
+                      onChange={(e: any, value: any) => {
+                        //console.log(value);
+                        setFieldValue(
+                          "container",
+                          value !== null ? value : INITIAL_FORM_STATE.container
+                        );
+                        //console.log('values.container', container);
+                      }}
+                      renderInput={(params: any) => (
+                        <TextFieldWrapper
+                          {...params}
+                          sx={{ width: "100%" }}
+                          variant="standard"
+                          label={`Container Type`}
+                          name={"container"}
+                        />
+                      )}
+                    ></Autocomplete>
+                  </Grid>
+                  <Grid
+                    item
+                    sx={{
+                      margin: "8px 0",
+                    }}
+                  >
+                    <TextFieldWrapper
+                      name="unitsPerContainer"
+                      // placeholder="Units Per Container"
+                      type="number"
+                      value={values.unitsPerContainer || ""}
+                      label={
+                        values.unit && values.container
+                          ? values.unit + ` per ` + values.container
+                          : `Units per Container`
+                      }
+                      // inputProps={{
+                      //   step: 0.1,
+                      // }}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {values.unit}
+                          </InputAdornment>
+                        ),
+                      }}
+                      onChange={(value: number) =>
+                        setFieldValue(
+                          "unitsPerContainer",
+                          value !== null
+                            ? value
+                            : INITIAL_FORM_STATE.unitsPerContainer
+                        )
+                      }
                     />
-                  )}
-                ></Autocomplete>
-              </Grid>
-              <Grid item xs={4} sm={2}>
-                <TextFieldWrapper
-                  name="unitsPerContainer"
-                  placeholder="Units Per Container"
-                  type="number"
-                  value={values.unitsPerContainer || ""}
-                  label={
-                    values.unit && values.container
-                      ? values.unit + ` per ` + values.container
-                      : `Units per Container`
-                  }
-                  inputProps={{
-                    step: 0.5,
-                  }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        {values.unit}
-                      </InputAdornment>
-                    ),
-                  }}
-                  onChange={(value: number) =>
-                    setFieldValue(
-                      "unitsPerContainer",
-                      value !== null
-                        ? value
-                        : INITIAL_FORM_STATE.unitsPerContainer
-                    )
-                  }
-                />
-              </Grid>
+                  </Grid>
+                  <Grid
+                    item
+                    sx={{
+                      margin: "8px 0",
+                      display: "flex",
 
+                      alignItems: "center",
+                    }}
+                  >
+                    <TextFieldWrapper
+                      name="avgPrice"
+                      type="number"
+                      value={values.avgPrice || ""}
+                      label="Average Price"
+                      // inputProps={{
+                      //   step: 0.1,
+                      // }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">$</InputAdornment>
+                        ),
+                      }}
+                      onChange={(value: number) =>
+                        setFieldValue(
+                          "avgPrice",
+                          value !== null ? value : INITIAL_FORM_STATE.avgPrice
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
               <>
                 {values.whereToBuy?.map((value, index) => {
                   return (
@@ -555,6 +599,7 @@ const GroceryItemEditForm = ({
 
 GroceryItemEditForm.propTypes = {
   dialogHandleClose: PropTypes.func.isRequired,
+  theGroceryItem: PropTypes.object,
 };
 
 export default GroceryItemEditForm;

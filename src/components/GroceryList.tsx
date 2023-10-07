@@ -262,7 +262,7 @@ const GroceryList = () => {
     let response: number = 0;
     if (measureBy === "mL") {
       response = Math.ceil(amountMlThisItem);
-    } else if (measureBy === "ounces") {
+    } else if (measureBy === "ounces" || measureBy === "oz") {
       response = Math.ceil(amountOzThisItem * 100) / 100;
     } else {
       response = Math.ceil(amountThisItem);
@@ -286,10 +286,21 @@ const GroceryList = () => {
           const bottles = Math.ceil(amountOfThisItem / 750); //should give me the number of bottles
 
           return (
-            <Typography component="li">
-              {bottles} {bottles === 1 ? "bottle" : "bottles"} (750mL) of{" "}
-              {liquorCalcd.item}
-            </Typography>
+            <>
+              <EditGroceryItem
+                ingredient={liquorCalcd}
+                collection={liquorCollection}
+                item={liquorCalcd.item}
+                itemMultiples={liquorMultiples}
+                measureBy="mL"
+                amountOfThisItem={amountOfThisItem}
+              ></EditGroceryItem>
+              <hr />
+              <Typography component="li">
+                {bottles} {bottles === 1 ? "bottle" : "bottles"} (750mL) of{" "}
+                {liquorCalcd.item}
+              </Typography>
+            </>
           );
         }
       }
@@ -357,7 +368,14 @@ const GroceryList = () => {
         if (amountOfThisItem) {
           return (
             <>
-              <EditGroceryItem groceryItem={mixerCalcd}></EditGroceryItem>
+              <EditGroceryItem
+                ingredient={mixerCalcd}
+                collection={mixersCollection}
+                item={mixerCalcd.item}
+                itemMultiples={mixerMultiples}
+                measureBy="oz"
+                amountOfThisItem={amountOfThisItem}
+              ></EditGroceryItem>
               <hr />
               <Typography component="li">
                 {amountOfThisItem}oz of {mixerCalcd.item}
@@ -398,37 +416,81 @@ const GroceryList = () => {
               thisItemNumerator / thisItemDenominator;
             if (thisItemFraction > 0.01) {
               return (
-                <Typography component="li">
-                  {Math.ceil(amountOfThisItem)}{" "}
-                  {amountOfThisItem > 1
-                    ? pluralize(garnishCalcd.item)
-                    : pluralize.singular(garnishCalcd.item)}
-                </Typography>
+                <>
+                  <EditGroceryItem
+                    ingredient={garnishCalcd}
+                    collection={garnishCollection}
+                    item={garnishCalcd.item}
+                    itemMultiples={garnishMultiples}
+                    measureBy={garnishCalcd.units}
+                    amountOfThisItem={amountOfThisItem}
+                  ></EditGroceryItem>
+                  <hr />
+                  <Typography component="li">
+                    {Math.ceil(amountOfThisItem)}{" "}
+                    {amountOfThisItem > 1
+                      ? pluralize(garnishCalcd.item)
+                      : pluralize.singular(garnishCalcd.item)}
+                  </Typography>
+                </>
               );
             } else {
               return (
-                <Typography component="li">{garnishCalcd.item}</Typography>
+                <>
+                  <EditGroceryItem
+                    ingredient={garnishCalcd}
+                    collection={garnishCollection}
+                    item={garnishCalcd.item}
+                    itemMultiples={garnishMultiples}
+                    measureBy={garnishCalcd.units}
+                    amountOfThisItem={amountOfThisItem}
+                  ></EditGroceryItem>
+                  <hr />
+                  <Typography component="li">{garnishCalcd.item}</Typography>
+                </>
               );
             }
           } else if (garnishCalcd.units) {
             return (
-              <Typography component="li">
-                {amountOfThisItem}{" "}
-                {garnishCalcd.units && amountOfThisItem > 1
-                  ? pluralize(garnishCalcd.units)
-                  : pluralize.singular(garnishCalcd.units)}
-                {" of "}
-                {garnishCalcd.item}
-              </Typography>
+              <>
+                <EditGroceryItem
+                  ingredient={garnishCalcd}
+                  collection={garnishCollection}
+                  item={garnishCalcd.item}
+                  itemMultiples={garnishMultiples}
+                  measureBy={garnishCalcd.units}
+                  amountOfThisItem={amountOfThisItem}
+                ></EditGroceryItem>
+                <hr />
+                <Typography component="li">
+                  {amountOfThisItem}{" "}
+                  {garnishCalcd.units && amountOfThisItem > 1
+                    ? pluralize(garnishCalcd.units)
+                    : pluralize.singular(garnishCalcd.units)}
+                  {" of "}
+                  {garnishCalcd.item}
+                </Typography>
+              </>
             );
           } else {
             return (
-              <Typography component="li">
-                {amountOfThisItem}{" "}
-                {amountOfThisItem > 1
-                  ? pluralize(garnishCalcd.item)
-                  : pluralize.singular(garnishCalcd.item)}
-              </Typography>
+              <>
+                <EditGroceryItem
+                  ingredient={garnishCalcd}
+                  collection={garnishCollection}
+                  item={garnishCalcd.item}
+                  itemMultiples={garnishMultiples}
+                  measureBy={garnishCalcd.units}
+                  amountOfThisItem={amountOfThisItem}
+                ></EditGroceryItem>
+                <hr />
+                <Typography component="li">
+                  {amountOfThisItem}{" "}
+                  {amountOfThisItem > 1
+                    ? pluralize(garnishCalcd.item)
+                    : pluralize.singular(garnishCalcd.item)}
+                </Typography>
+              </>
             );
           }
         } else {
