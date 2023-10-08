@@ -296,10 +296,10 @@ const GroceryList = () => {
                 amountOfThisItem={amountOfThisItem}
               ></EditGroceryItem>
 
-              <Typography component="li" sx={{ fontSize: ".5em" }}>
+              {/* <Typography component="li" sx={{ fontSize: ".5em" }}>
                 {bottles} {bottles === 1 ? "bottle" : "bottles"} (750mL) of{" "}
                 {liquorCalcd.item}
-              </Typography>
+              </Typography> */}
             </>
           );
         }
@@ -377,9 +377,9 @@ const GroceryList = () => {
                 amountOfThisItem={amountOfThisItem}
               ></EditGroceryItem>
 
-              <Typography component="li" sx={{ fontSize: ".5em" }}>
+              {/* <Typography component="li" sx={{ fontSize: ".5em" }}>
                 {amountOfThisItem}oz of {mixerCalcd.item}
-              </Typography>
+              </Typography> */}
             </>
           );
         }

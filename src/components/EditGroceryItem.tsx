@@ -11,6 +11,8 @@ import _ from "lodash";
 import { useAppSelector } from "../reducers/hooks";
 
 import { GroceryItem } from "../types/GroceryItem";
+import { toTitleCase } from "./common/toTitleCase";
+import { pullDomainFrom } from "./common/pullDomainFrom";
 
 type IngredientCollection = {
   item?: string;
@@ -293,21 +295,68 @@ const EditGroceryItem = (props: propsTypes) => {
               flexDirection: "row",
               flexWrap: "nowrap",
               alignItems: "center",
-              cursor: "pointer",
             }}
-            onClick={() => setDialogOpen(true)}
           >
             {theMatchingGroceryItem?.img && (
-              <img
-                src={theMatchingGroceryItem?.img}
-                style={{
-                  width: "30px",
-                  marginRight: "4px",
-                  display: "inline",
-                }}
-              ></img>
+              <Grid
+                item
+                sx={{ cursor: "pointer" }}
+                onClick={() => setDialogOpen(true)}
+              >
+                <img
+                  src={theMatchingGroceryItem?.img}
+                  style={{
+                    width: "30px",
+                    marginRight: "4px",
+                    display: "inline",
+                  }}
+                ></img>
+              </Grid>
             )}
-            <Grid item>{computedGroceryItem}</Grid>
+            <Grid item>
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => setDialogOpen(true)}
+              >
+                {computedGroceryItem}
+              </span>
+
+              {theMatchingGroceryItem &&
+                theMatchingGroceryItem.whereToBuy &&
+                theMatchingGroceryItem.whereToBuy.length > -1 &&
+                theMatchingGroceryItem.whereToBuy.map((whereToBuyURL) => {
+                  if (whereToBuyURL !== undefined && whereToBuyURL !== "") {
+                    const theURL = new URL(whereToBuyURL);
+                    return (
+                      <a
+                        href={whereToBuyURL}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ marginLeft: "4px" }}
+                        title={toTitleCase(pullDomainFrom(whereToBuyURL))}
+                      >
+                        <img
+                          src={
+                            "https://www.google.com/s2/favicons?domain=" +
+                            theURL.hostname
+                          }
+                        />
+                      </a>
+                    );
+                  }
+                })}
+              {props.amountOfThisItem && props.measureBy && (
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: ".6em",
+                    lineHeight: "1",
+                  }}
+                >
+                  (Total: {props.amountOfThisItem + props.measureBy})
+                </span>
+              )}
+            </Grid>
           </Grid>
         </>
       ) : (
