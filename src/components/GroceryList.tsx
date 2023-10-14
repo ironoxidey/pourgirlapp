@@ -426,12 +426,12 @@ const GroceryList = () => {
                     amountOfThisItem={amountOfThisItem}
                   ></EditGroceryItem>
 
-                  <Typography component="li" sx={{ fontSize: ".5em" }}>
+                  {/* <Typography component="li" sx={{ fontSize: ".5em" }}>
                     {Math.ceil(amountOfThisItem)}{" "}
                     {amountOfThisItem > 1
                       ? pluralize(garnishCalcd.item)
                       : pluralize.singular(garnishCalcd.item)}
-                  </Typography>
+                  </Typography> */}
                 </>
               );
             } else {
@@ -446,9 +446,9 @@ const GroceryList = () => {
                     amountOfThisItem={amountOfThisItem}
                   ></EditGroceryItem>
 
-                  <Typography component="li" sx={{ fontSize: ".5em" }}>
+                  {/* <Typography component="li" sx={{ fontSize: ".5em" }}>
                     {garnishCalcd.item}
-                  </Typography>
+                  </Typography> */}
                 </>
               );
             }
@@ -464,14 +464,14 @@ const GroceryList = () => {
                   amountOfThisItem={amountOfThisItem}
                 ></EditGroceryItem>
 
-                <Typography component="li" sx={{ fontSize: ".5em" }}>
+                {/* <Typography component="li" sx={{ fontSize: ".5em" }}>
                   {amountOfThisItem}{" "}
                   {garnishCalcd.units && amountOfThisItem > 1
                     ? pluralize(garnishCalcd.units)
                     : pluralize.singular(garnishCalcd.units)}
                   {" of "}
                   {garnishCalcd.item}
-                </Typography>
+                </Typography> */}
               </>
             );
           } else {
@@ -486,12 +486,12 @@ const GroceryList = () => {
                   amountOfThisItem={amountOfThisItem}
                 ></EditGroceryItem>
 
-                <Typography component="li" sx={{ fontSize: ".5em" }}>
+                {/* <Typography component="li" sx={{ fontSize: ".5em" }}>
                   {amountOfThisItem}{" "}
                   {amountOfThisItem > 1
                     ? pluralize(garnishCalcd.item)
                     : pluralize.singular(garnishCalcd.item)}
-                </Typography>
+                </Typography> */}
               </>
             );
           }

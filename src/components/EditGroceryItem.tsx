@@ -35,11 +35,13 @@ type propsTypes = {
 const EditGroceryItem = (props: propsTypes) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const [numContainers, setNumContainers] = useState(0);
+
   const stateGroceryItemsList = useAppSelector(
     (state: any) => state.groceries.items
   );
 
-  console.log("props", props);
+  // console.log("props", props);
   const dialogHandleClose = () => {
     setDialogOpen(false);
   };
@@ -51,9 +53,10 @@ const EditGroceryItem = (props: propsTypes) => {
     measureBy: string | undefined
   ) => {
     //let itemMultiples: (string | undefined)[] = [];
-    if (itemMultiples.indexOf(item) > -1) {
-      return;
-    }
+    // if (itemMultiples.indexOf(item) > -1) {
+    //   console.log("sumItems " + item + " has multiples");
+    //   return;
+    // }
 
     let allThisItem: any[] = _.filter(collection, ["item", item]); //returns all the mixer objects of the same name, so that we can combine their values
     let amountOzThisItem = 0;
@@ -108,6 +111,7 @@ const EditGroceryItem = (props: propsTypes) => {
     } else {
       response = Math.ceil(amountThisItem);
     }
+    console.log(props.item + " sumItems response", response);
 
     return response;
   };
@@ -115,7 +119,11 @@ const EditGroceryItem = (props: propsTypes) => {
   const [initialValues, setInitialValues] = useState(false);
   const [computedGroceryItem, setComputedGroceryItem] = useState<string>();
   const [theMatchingGroceryItem, setTheMatchingGroceryItem] =
-    useState<GroceryItem>();
+    useState<GroceryItem>({
+      title: props.item,
+      unit: props.measureBy,
+      whereToBuy: [""],
+    });
 
   useEffect(() => {
     if (props && props.ingredient && props.ingredient.item) {
@@ -124,52 +132,76 @@ const EditGroceryItem = (props: propsTypes) => {
           return groceryItem.title === props?.ingredient?.item;
         })
       );
-      console.log("theMatchingGroceryItem", theMatchingGroceryItem);
+    }
+  }, [
+    props,
+    props.ingredient,
+    props.ingredient?.amountOz,
+    props.ingredient?.item,
+    props.amountOfThisItem,
+    props.item,
+  ]);
 
-      let numContainers;
-      if (
-        theMatchingGroceryItem &&
-        theMatchingGroceryItem.unit === "oz" &&
-        theMatchingGroceryItem.unitsPerContainer &&
-        props.collection &&
-        props.item &&
-        props.itemMultiples
-      ) {
+  // console.log("computedGroceryItem", computedGroceryItem);
+
+  useEffect(() => {
+    if (
+      props &&
+      props.ingredient &&
+      props.ingredient.item &&
+      theMatchingGroceryItem &&
+      theMatchingGroceryItem.unitsPerContainer &&
+      props.collection &&
+      props.ingredient.item &&
+      props.itemMultiples
+    ) {
+      if (theMatchingGroceryItem.unit === "oz") {
         let amountOfThisItem = sumItems(
           props.collection,
-          props.item,
+          props.ingredient.item,
           props.itemMultiples,
           "oz"
         ) as number;
 
-        numContainers = Math.ceil(
-          amountOfThisItem / theMatchingGroceryItem.unitsPerContainer
+        setNumContainers(
+          Math.ceil(amountOfThisItem / theMatchingGroceryItem.unitsPerContainer)
         );
+        console.log("theMatchingGroceryItem", theMatchingGroceryItem);
+        console.log("amountOfThisItem", amountOfThisItem);
       }
-      if (
-        theMatchingGroceryItem &&
-        theMatchingGroceryItem.unit === "mL" &&
-        theMatchingGroceryItem.unitsPerContainer &&
-        props.collection &&
-        props.item &&
-        props.itemMultiples
-      ) {
+      if (theMatchingGroceryItem.unit === "mL") {
         let amountOfThisItem = sumItems(
           props.collection,
-          props.item,
+          props.ingredient.item,
           props.itemMultiples,
           "mL"
         ) as number;
 
-        numContainers = Math.ceil(
-          amountOfThisItem / theMatchingGroceryItem.unitsPerContainer
+        setNumContainers(
+          Math.ceil(amountOfThisItem / theMatchingGroceryItem.unitsPerContainer)
         );
+        console.log("theMatchingGroceryItem", theMatchingGroceryItem);
+        console.log("amountOfThisItem", amountOfThisItem);
       }
+    }
+  }, [
+    props,
+    props.ingredient,
+    props.ingredient?.item,
+    props.amountOfThisItem,
+    theMatchingGroceryItem,
+    props.collection,
+    props.ingredient?.item,
+    props.itemMultiples,
+  ]);
 
+  useEffect(() => {
+    if (props && props.ingredient && props.ingredient.item) {
+      // console.log(props.ingredient.item + " numContainers", numContainers);
       if (
         theMatchingGroceryItem &&
         theMatchingGroceryItem.container &&
-        numContainers
+        numContainers > 0
       ) {
         setComputedGroceryItem(
           `${numContainers} ${
@@ -183,14 +215,34 @@ const EditGroceryItem = (props: propsTypes) => {
           }`
         );
       } else if (
+        theMatchingGroceryItem &&
+        theMatchingGroceryItem.title &&
+        props?.ingredient?.units &&
+        props?.ingredient?.units.indexOf("/") &&
+        props?.ingredient?.units.indexOf("/") > -1
+      ) {
+        //if units is a fraction
+        //just using this to determine if this grocery item might be something that we only need one package of
+        const thisItemNumerator: number = parseInt(
+          props?.ingredient?.units.split("/")[0]
+        );
+        const thisItemDenominator: number = parseInt(
+          props?.ingredient?.units.split("/")[1]
+        );
+        const thisItemFraction: number =
+          thisItemNumerator / thisItemDenominator;
+        if (thisItemFraction <= 0.01) {
+          setComputedGroceryItem(`${theMatchingGroceryItem.title}`);
+        }
+      } else if (
         props?.measureBy === "mL" &&
         props.collection &&
-        props.item &&
+        props.ingredient.item &&
         props.itemMultiples
       ) {
         let amountOfThisItem = sumItems(
           props.collection,
-          props.item,
+          props.ingredient.item,
           props.itemMultiples,
           "mL"
         ) as number;
@@ -205,15 +257,20 @@ const EditGroceryItem = (props: propsTypes) => {
       } else if (
         props?.measureBy === "oz" &&
         props.collection &&
-        props.item &&
+        props.ingredient.item &&
         props.itemMultiples
       ) {
         let amountOfThisItem = sumItems(
           props.collection,
-          props.item,
+          props.ingredient.item,
           props.itemMultiples,
           "oz"
         ) as number;
+        console.log(
+          "amountOfThisItem (" + props.ingredient.item + ")",
+          amountOfThisItem
+        );
+
         setComputedGroceryItem(
           `${amountOfThisItem}oz of ${props.ingredient.item}`
         );
@@ -222,13 +279,27 @@ const EditGroceryItem = (props: propsTypes) => {
         props?.ingredient?.units.indexOf("/") &&
         props?.ingredient?.units.indexOf("/") > -1
       ) {
-        setComputedGroceryItem(
-          `${props?.amountOfThisItem} ${
-            props?.amountOfThisItem && props?.amountOfThisItem > 1
-              ? pluralize(props.ingredient.item)
-              : pluralize.singular(props.ingredient.item)
-          }`
+        //if units is a fraction
+        //just using this to determine if this grocery item might be something that we only need one package of
+        const thisItemNumerator: number = parseInt(
+          props?.ingredient?.units.split("/")[0]
         );
+        const thisItemDenominator: number = parseInt(
+          props?.ingredient?.units.split("/")[1]
+        );
+        const thisItemFraction: number =
+          thisItemNumerator / thisItemDenominator;
+        if (thisItemFraction > 0.01) {
+          setComputedGroceryItem(
+            `${props?.amountOfThisItem} ${
+              props?.amountOfThisItem && props?.amountOfThisItem > 1
+                ? pluralize(props.ingredient.item)
+                : pluralize.singular(props.ingredient.item)
+            }`
+          );
+        } else {
+          setComputedGroceryItem(`${props.ingredient.item}`);
+        }
       } else if (props?.ingredient?.units) {
         setComputedGroceryItem(
           `${props?.amountOfThisItem} ${
@@ -247,11 +318,22 @@ const EditGroceryItem = (props: propsTypes) => {
         );
       }
 
-      console.log("initial values", initialValues);
+      // console.log("initial values", initialValues);
     }
-  }, [props, props.ingredient, props.ingredient?.amountOz]);
+  }, [
+    props,
+    props.ingredient,
+    props.ingredient?.amountOz,
+    props.ingredient?.item,
+    props.item,
+    props.collection,
+    props.itemMultiples,
+    theMatchingGroceryItem,
+    numContainers,
+  ]);
 
   useEffect(() => {
+    // console.log("theMatchingGroceryItem", theMatchingGroceryItem);
     if (!theMatchingGroceryItem && props.item && props.measureBy) {
       setTheMatchingGroceryItem({
         title: props.item,
@@ -264,7 +346,10 @@ const EditGroceryItem = (props: propsTypes) => {
     props,
     props.ingredient,
     props.ingredient?.amountOz,
+    props.amountOfThisItem,
     theMatchingGroceryItem,
+    theMatchingGroceryItem?.$id,
+    theMatchingGroceryItem?.title,
   ]);
 
   return (
@@ -291,10 +376,12 @@ const EditGroceryItem = (props: propsTypes) => {
         <>
           <Grid
             container
+            className="groceryItem"
             sx={{
               flexDirection: "row",
               flexWrap: "nowrap",
               alignItems: "center",
+              marginBottom: "10px",
             }}
           >
             {theMatchingGroceryItem?.img && (
@@ -313,9 +400,10 @@ const EditGroceryItem = (props: propsTypes) => {
                 ></img>
               </Grid>
             )}
+
             <Grid item>
               <span
-                style={{ cursor: "pointer" }}
+                style={{ cursor: "pointer", lineHeight: "1.3" }}
                 onClick={() => setDialogOpen(true)}
               >
                 {computedGroceryItem}
@@ -345,17 +433,21 @@ const EditGroceryItem = (props: propsTypes) => {
                     );
                   }
                 })}
-              {props.amountOfThisItem && props.measureBy && (
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: ".6em",
-                    lineHeight: "1",
-                  }}
-                >
-                  (Total: {props.amountOfThisItem + props.measureBy})
-                </span>
-              )}
+              {props.amountOfThisItem &&
+                props.measureBy &&
+                (props.measureBy === "mL" ||
+                  props.measureBy === "ounces" ||
+                  props.measureBy === "oz") && (
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: ".6em",
+                      lineHeight: "1",
+                    }}
+                  >
+                    (Total: {props.amountOfThisItem + props.measureBy})
+                  </span>
+                )}
             </Grid>
           </Grid>
         </>
