@@ -233,6 +233,17 @@ const EditGroceryItem = (props: propsTypes) => {
           thisItemNumerator / thisItemDenominator;
         if (thisItemFraction <= 0.01) {
           setComputedGroceryItem(`${theMatchingGroceryItem.title}`);
+        } else {
+          setComputedGroceryItem(`${
+            props && props.amountOfThisItem && Math.ceil(props.amountOfThisItem)
+          } 
+                    ${
+                      props &&
+                      props.amountOfThisItem &&
+                      props.amountOfThisItem > 1
+                        ? pluralize(props.ingredient.item)
+                        : pluralize.singular(props.ingredient.item)
+                    }`);
         }
       } else if (
         props?.measureBy === "mL" &&
@@ -266,14 +277,17 @@ const EditGroceryItem = (props: propsTypes) => {
           props.itemMultiples,
           "oz"
         ) as number;
-        console.log(
-          "amountOfThisItem (" + props.ingredient.item + ")",
-          amountOfThisItem
-        );
-
-        setComputedGroceryItem(
-          `${amountOfThisItem}oz of ${props.ingredient.item}`
-        );
+        // console.log(
+        //   "amountOfThisItem (" + props.ingredient.item + ")",
+        //   amountOfThisItem
+        // );
+        if (amountOfThisItem > 0) {
+          setComputedGroceryItem(
+            `${amountOfThisItem}oz of ${props.ingredient.item}`
+          );
+        } else {
+          setComputedGroceryItem(`${props.ingredient.item}`);
+        }
       } else if (
         props?.ingredient?.units &&
         props?.ingredient?.units.indexOf("/") &&
@@ -403,6 +417,7 @@ const EditGroceryItem = (props: propsTypes) => {
 
             <Grid item>
               <span
+                className="groceryItemText"
                 style={{ cursor: "pointer", lineHeight: "1.3" }}
                 onClick={() => setDialogOpen(true)}
               >
@@ -434,20 +449,24 @@ const EditGroceryItem = (props: propsTypes) => {
                   }
                 })}
               {props.amountOfThisItem &&
-                props.measureBy &&
-                (props.measureBy === "mL" ||
-                  props.measureBy === "ounces" ||
-                  props.measureBy === "oz") && (
-                  <span
-                    style={{
-                      display: "block",
-                      fontSize: ".6em",
-                      lineHeight: "1",
-                    }}
-                  >
-                    (Total: {props.amountOfThisItem + props.measureBy})
-                  </span>
-                )}
+              props.amountOfThisItem > 0 &&
+              props.measureBy &&
+              (props.measureBy === "mL" ||
+                props.measureBy === "ounces" ||
+                props.measureBy === "oz") ? (
+                <span
+                  className="totalAmount"
+                  style={{
+                    display: "block",
+                    fontSize: ".6em",
+                    lineHeight: "1",
+                  }}
+                >
+                  (Total: {props.amountOfThisItem + props.measureBy})
+                </span>
+              ) : (
+                ""
+              )}
             </Grid>
           </Grid>
         </>

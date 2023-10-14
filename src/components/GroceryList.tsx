@@ -496,7 +496,22 @@ const GroceryList = () => {
             );
           }
         } else {
-          //   return <Typography component="li" sx={{fontSize: '.5em'}}>{garnishCalcd.item}</Typography>;
+          return (
+            <>
+              <EditGroceryItem
+                ingredient={garnishCalcd}
+                collection={garnishCollection}
+                item={garnishCalcd.item}
+                itemMultiples={garnishMultiples}
+                measureBy={garnishCalcd.units}
+                amountOfThisItem={amountOfThisItem}
+              ></EditGroceryItem>
+
+              <Typography component="li" sx={{ fontSize: ".5em" }}>
+                {garnishCalcd.item}
+              </Typography>
+            </>
+          );
         }
       }
     });
