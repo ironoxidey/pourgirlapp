@@ -4,13 +4,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 type AppState = {
   cocktailsUpdate: number;
   rightToMakeChanges: string;
+  showGroceryTotals: boolean;
 };
 
 const initialState: AppState = {
   cocktailsUpdate: 0,
   rightToMakeChanges: "FORM",
+  showGroceryTotals: false,
 };
-
 //This was really helpful when setting this up: https://redux-toolkit.js.org/usage/usage-with-typescript
 
 export const appSlice = createSlice({
@@ -28,9 +29,16 @@ export const appSlice = createSlice({
     setRightToMakeChanges: (state, action: PayloadAction<string>) => {
       state.rightToMakeChanges = action.payload;
     },
+    setShowGroceryTotals: (state, action: PayloadAction<boolean>) => {
+      state.showGroceryTotals = action.payload;
+    },
   },
 });
 
-export const { setCocktailsUpdate, setRightToMakeChanges } = appSlice.actions;
+export const {
+  setCocktailsUpdate,
+  setRightToMakeChanges,
+  setShowGroceryTotals,
+} = appSlice.actions;
 
 export default appSlice.reducer;

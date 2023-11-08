@@ -284,7 +284,7 @@ const Dashboard = () => {
       {auth && auth.$id && (
         <>
           <NavBar></NavBar>
-          <EventDetails></EventDetails>
+          {/* <EventDetails></EventDetails> */}
           <Grid
             container
             className="dashboard"

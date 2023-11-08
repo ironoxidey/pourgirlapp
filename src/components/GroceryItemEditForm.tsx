@@ -16,7 +16,7 @@ import {
   Avatar,
 } from "@mui/material";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import LocalBarTwoToneIcon from "@mui/icons-material/LocalBarTwoTone";
+import ShoppingBasketTwoToneIcon from "@mui/icons-material/ShoppingBasketTwoTone";
 
 import TextFieldWrapper from "./common/TextField";
 import { useAppSelector, useAppDispatch } from "../reducers/hooks";
@@ -225,11 +225,11 @@ const GroceryItemEditFormContent = ({
               }}
               onChange={(e: any, value: GroceryItem) => {
                 // handleOnChange(value, servings);
-                console.log("autocomplete onChange", value);
-                console.log("autocomplete all values", values);
+                // console.log("autocomplete onChange", value);
+                // console.log("autocomplete all values", values);
 
                 if (typeof value === "string") {
-                  console.log("setFieldValue('title', value)", value);
+                  // console.log("setFieldValue('title', value)", value);
                   setFieldValue("title", value);
                 } else if (
                   value.inputValue ||
@@ -237,13 +237,13 @@ const GroceryItemEditFormContent = ({
                   value.title ||
                   values.title
                 ) {
-                  console.log(
-                    "setFieldValue('title', value.title)",
-                    value.inputValue ||
-                      values.inputValue ||
-                      value.title ||
-                      values.title
-                  );
+                  // console.log(
+                  //   "setFieldValue('title', value.title)",
+                  //   value.inputValue ||
+                  //     values.inputValue ||
+                  //     value.title ||
+                  //     values.title
+                  // );
                   setFieldValue(
                     "title",
                     value.inputValue ||
@@ -252,18 +252,18 @@ const GroceryItemEditFormContent = ({
                       values.title
                   );
                 } else {
-                  console.log(
-                    "setFieldValue('title', INITIAL_FORM_STATE.title)",
-                    INITIAL_FORM_STATE.title
-                  );
+                  // console.log(
+                  //   "setFieldValue('title', INITIAL_FORM_STATE.title)",
+                  //   INITIAL_FORM_STATE.title
+                  // );
                   setFieldValue("title", INITIAL_FORM_STATE.title);
                 }
 
                 if (_.find(stateGroceryItemsList, ["title", value.title])) {
-                  console.log(
-                    "_.find(stateGroceryItemsList, ['title', value.title])",
-                    _.find(stateGroceryItemsList, ["title", value.title])
-                  );
+                  // console.log(
+                  //   "_.find(stateGroceryItemsList, ['title', value.title])",
+                  //   _.find(stateGroceryItemsList, ["title", value.title])
+                  // );
                   //set all field values to the groceryItem selected
                   resetForm({ values: value });
                 }
@@ -291,7 +291,7 @@ const GroceryItemEditFormContent = ({
                 <li {...props}>
                   <Grid container alignItems="center">
                     <Avatar src={option.img} sx={{ marginRight: "4px" }}>
-                      <LocalBarTwoToneIcon></LocalBarTwoToneIcon>
+                      <ShoppingBasketTwoToneIcon></ShoppingBasketTwoToneIcon>
                     </Avatar>
                     <Typography
                       sx={{

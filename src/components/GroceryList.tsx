@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Grid, Typography, Box, TextField, Autocomplete } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  Box,
+  TextField,
+  Autocomplete,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
 import pluralize from "pluralize";
 
-import { useAppSelector } from "../reducers/hooks";
+import { useAppSelector, useAppDispatch } from "../reducers/hooks";
+import { setShowGroceryTotals } from "../reducers/appSlice";
 
 import _ from "lodash";
 import { Cocktail } from "../types/Cocktail";
@@ -22,11 +31,16 @@ const ounces = 2; //of alcohol per serving
 const mLperOunce = 29.5735; //according to Google
 
 const GroceryList = () => {
+  const dispatch = useAppDispatch();
+
   const stateCocktails = useAppSelector(
     (state: any) => state.groceries.cocktails
   );
   const stateWines = useAppSelector((state: any) => state.groceries.wines);
   const stateBeers = useAppSelector((state: any) => state.groceries.beers);
+  const stateShowGroceryTotals = useAppSelector(
+    (state: any) => state.app.showGroceryTotals
+  );
 
   let liquorCollection: IngredientCollection[] = [];
   let mixersCollection: IngredientCollection[] = [];
@@ -397,7 +411,8 @@ const GroceryList = () => {
           garnishCalcd.units
         ) as number;
 
-        //console.log(garnishCalcd.item + " amountOfThisItem ", amountOfThisItem);
+        console.log("garnishCollection", garnishCollection);
+        console.log(garnishCalcd.item + " amountOfThisItem ", amountOfThisItem);
 
         if (amountOfThisItem) {
           if (
@@ -498,18 +513,20 @@ const GroceryList = () => {
         } else {
           return (
             <>
-              <EditGroceryItem
-                ingredient={garnishCalcd}
-                collection={garnishCollection}
-                item={garnishCalcd.item}
-                itemMultiples={garnishMultiples}
-                measureBy={garnishCalcd.units}
-                amountOfThisItem={amountOfThisItem}
-              ></EditGroceryItem>
+              <div style={{ color: "red" }} className="amountUndefined">
+                <EditGroceryItem
+                  ingredient={garnishCalcd}
+                  collection={garnishCollection}
+                  item={garnishCalcd.item}
+                  itemMultiples={garnishMultiples}
+                  measureBy={garnishCalcd.units}
+                  amountOfThisItem={amountOfThisItem}
+                ></EditGroceryItem>
 
-              <Typography component="li" sx={{ fontSize: ".5em" }}>
-                {garnishCalcd.item}
-              </Typography>
+                <Typography component="li" sx={{ fontSize: ".5em" }}>
+                  {garnishCalcd.item}
+                </Typography>
+              </div>
             </>
           );
         }
@@ -574,68 +591,102 @@ const GroceryList = () => {
     <>
       {((stateCocktails.length > 0 && stateCocktails[0].$id) ||
         (stateWines.length > 0 && stateWines[0].name)) && (
-        <Grid
-          item
-          md={3}
-          className="groceryList"
-          sx={{ textAlign: "left", padding: "20px" }}
-        >
-          <Typography component="h3" sx={{ color: "var(--green)!important" }}>
-            Grocery List:
-          </Typography>
-          {liquor && liquor.length > 0 && (
-            <Typography
-              component="h3"
+        <>
+          <Grid container md={3}>
+            <Grid item>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={stateShowGroceryTotals}
+                    inputProps={{
+                      "aria-label": "controlled",
+                    }}
+                    onChange={() =>
+                      dispatch(setShowGroceryTotals(!stateShowGroceryTotals))
+                    }
+                  />
+                }
+                label={<>Show Totals</>}
+                sx={{
+                  "& .MuiTypography-root": {
+                    fontFamily: "Bree",
+                  },
+
+                  "& .MuiCheckbox-root": {
+                    padding: "2px",
+                  },
+                }}
+                className="showGroceryTotals"
+              />
+            </Grid>
+            <Grid
+              item
+              // md={3}
+              className="groceryList"
               sx={{
-                color: "var(--gray)!important",
-                fontWeight: "400!important",
-                fontFamily: "Bree Serif!important",
+                textAlign: "left",
+                // padding: "20px"
               }}
             >
-              Liquor
-            </Typography>
-          )}
-          {liquor}
-          {wine && wine.length > 0 && (
-            <Typography
-              component="h3"
-              sx={{
-                color: "var(--gray)!important",
-                fontWeight: "400!important",
-                fontFamily: "Bree Serif!important",
-              }}
-            >
-              Wine
-            </Typography>
-          )}
-          {wine}
-          {beer && beer.length > 0 && (
-            <Typography
-              component="h3"
-              sx={{
-                color: "var(--gray)!important",
-                fontWeight: "400!important",
-                fontFamily: "Bree Serif!important",
-              }}
-            >
-              Beer
-            </Typography>
-          )}
-          {beer}
-          {mixers && mixers.length > 0 && (
-            <Typography
-              component="h3"
-              sx={{
-                color: "var(--gray)!important",
-                fontWeight: "400!important",
-                fontFamily: "Bree Serif!important",
-              }}
-            >
-              Mixers
-            </Typography>
-          )}
-          {mixers}
-          {/* {extraIngredients && extraIngredients.length > 0 && (
+              <Typography
+                component="h3"
+                sx={{ color: "var(--green)!important" }}
+              >
+                Grocery List:
+              </Typography>
+              {liquor && liquor.length > 0 && (
+                <Typography
+                  component="h3"
+                  sx={{
+                    color: "var(--gray)!important",
+                    fontWeight: "400!important",
+                    fontFamily: "Bree Serif!important",
+                  }}
+                >
+                  Liquor
+                </Typography>
+              )}
+              {liquor}
+              {wine && wine.length > 0 && (
+                <Typography
+                  component="h3"
+                  sx={{
+                    color: "var(--gray)!important",
+                    fontWeight: "400!important",
+                    fontFamily: "Bree Serif!important",
+                  }}
+                >
+                  Wine
+                </Typography>
+              )}
+              {wine}
+              {beer && beer.length > 0 && (
+                <Typography
+                  component="h3"
+                  sx={{
+                    color: "var(--gray)!important",
+                    fontWeight: "400!important",
+                    fontFamily: "Bree Serif!important",
+                  }}
+                >
+                  Beer
+                </Typography>
+              )}
+              {beer}
+              {mixers && mixers.length > 0 && (
+                <Typography
+                  component="h3"
+                  sx={{
+                    color: "var(--gray)!important",
+                    fontWeight: "400!important",
+                    fontFamily: "Bree Serif!important",
+                  }}
+                >
+                  Mixers
+                </Typography>
+              )}
+              {mixers}
+              {/* {extraIngredients && extraIngredients.length > 0 && (
             <Typography
               component="h3"
               sx={{
@@ -648,20 +699,22 @@ const GroceryList = () => {
             </Typography>
           )}
           {extraIngredients} */}
-          {garnish && garnish.length > 0 && (
-            <Typography
-              component="h3"
-              sx={{
-                color: "var(--gray)!important",
-                fontWeight: "400!important",
-                fontFamily: "Bree Serif!important",
-              }}
-            >
-              Other Items
-            </Typography>
-          )}
-          {garnish}
-        </Grid>
+              {garnish && garnish.length > 0 && (
+                <Typography
+                  component="h3"
+                  sx={{
+                    color: "var(--gray)!important",
+                    fontWeight: "400!important",
+                    fontFamily: "Bree Serif!important",
+                  }}
+                >
+                  Other Items
+                </Typography>
+              )}
+              {garnish}
+            </Grid>
+          </Grid>
+        </>
         // END .groceryList
       )}
     </>

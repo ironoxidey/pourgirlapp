@@ -40,6 +40,9 @@ const EditGroceryItem = (props: propsTypes) => {
   const stateGroceryItemsList = useAppSelector(
     (state: any) => state.groceries.items
   );
+  const stateShowGroceryTotals = useAppSelector(
+    (state: any) => state.app.showGroceryTotals
+  );
 
   // console.log("props", props);
   const dialogHandleClose = () => {
@@ -111,7 +114,7 @@ const EditGroceryItem = (props: propsTypes) => {
     } else {
       response = Math.ceil(amountThisItem);
     }
-    console.log(props.item + " sumItems response", response);
+    // console.log(props.item + " sumItems response", response);
 
     return response;
   };
@@ -415,10 +418,10 @@ const EditGroceryItem = (props: propsTypes) => {
               </Grid>
             )}
 
-            <Grid item>
+            <Grid item sx={{ lineHeight: "1.2" }}>
               <span
                 className="groceryItemText"
-                style={{ cursor: "pointer", lineHeight: "1.3" }}
+                style={{ cursor: "pointer", lineHeight: "1.2" }}
                 onClick={() => setDialogOpen(true)}
               >
                 {computedGroceryItem}
@@ -448,7 +451,8 @@ const EditGroceryItem = (props: propsTypes) => {
                     );
                   }
                 })}
-              {props.amountOfThisItem &&
+              {stateShowGroceryTotals &&
+              props.amountOfThisItem &&
               props.amountOfThisItem > 0 &&
               props.measureBy &&
               (props.measureBy === "mL" ||
