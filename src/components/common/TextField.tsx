@@ -1,6 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextField } from "@mui/material";
-import { useField } from "formik";
+import { useField, useFormikContext } from "formik";
+import {
+  setRightToMakeChanges,
+  setLastToMakeChanges,
+} from "../../reducers/appSlice";
+import { useAppSelector, useAppDispatch } from "../../reducers/hooks";
 
 const TextFieldWrapper = ({
   id,
@@ -42,6 +47,25 @@ const TextFieldWrapper = ({
   sx?: any;
 }) => {
   const [field, meta] = useField(name);
+  const { values, setFieldValue } = useFormikContext();
+
+  const appRightToMakeChanges: string = useAppSelector(
+    (state: any) => state.app.rightToMakeChanges
+  );
+  const appLastToMakeChanges: string = useAppSelector(
+    (state: any) => state.app.lastToMakeChanges
+  );
+
+  useEffect(() => {
+    // console.log("textfieldWarppaer name", name);
+    if (appRightToMakeChanges !== "FORM") {
+      if (typeof value === "number" && name === "servings") {
+        setFieldValue(name, Math.round(value));
+      } else {
+        setFieldValue(name, value);
+      }
+    }
+  }, [field.value, value]);
 
   const configTextField = {
     ...field,
@@ -56,17 +80,22 @@ const TextFieldWrapper = ({
     inputProps,
     InputProps,
     multiline,
-    value,
+    value: field.value, // Use field.value for controlled component
+    // value,
     defaultValue,
     autoComplete,
     sx,
     step,
+    // onChange,
+    // onFocus,
+    // onBlur,
   };
 
   if (meta && meta.touched && meta.error) {
     configTextField.error = true;
     configTextField.helperText = meta.error;
   }
+  // return <TextField {...configTextField} value={field.value} />;
   return <TextField {...configTextField} />;
 };
 

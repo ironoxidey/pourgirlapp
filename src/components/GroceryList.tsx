@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import PropTypes from "prop-types";
 import {
   Grid,
@@ -8,15 +8,22 @@ import {
   Autocomplete,
   Checkbox,
   FormControlLabel,
+  Tooltip,
 } from "@mui/material";
 import pluralize from "pluralize";
 
 import { useAppSelector, useAppDispatch } from "../reducers/hooks";
-import { setShowGroceryTotals } from "../reducers/appSlice";
+import {
+  setShowGroceryTotals,
+  setShowGroceryPrices,
+} from "../reducers/appSlice";
 
 import _ from "lodash";
 import { Cocktail } from "../types/Cocktail";
 import EditGroceryItem from "./EditGroceryItem";
+
+import IconButton from "@mui/material/IconButton";
+import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 
 type IngredientCollection = {
   item?: string;
@@ -31,6 +38,22 @@ const ounces = 2; //of alcohol per serving
 const mLperOunce = 29.5735; //according to Google
 
 const GroceryList = () => {
+  const groceryRef = useRef(null);
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = () => {
+    if (groceryRef.current != null) {
+      const range = document.createRange();
+      range.selectNode(groceryRef.current);
+      window.getSelection()?.removeAllRanges();
+      window.getSelection()?.addRange(range);
+      document.execCommand("copy");
+      window.getSelection()?.removeAllRanges();
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset the copied state after 2 seconds
+    }
+  };
+
   const dispatch = useAppDispatch();
 
   const stateCocktails = useAppSelector(
@@ -40,6 +63,9 @@ const GroceryList = () => {
   const stateBeers = useAppSelector((state: any) => state.groceries.beers);
   const stateShowGroceryTotals = useAppSelector(
     (state: any) => state.app.showGroceryTotals
+  );
+  const stateShowGroceryPrices = useAppSelector(
+    (state: any) => state.app.showGroceryPrices
   );
 
   let liquorCollection: IngredientCollection[] = [];
@@ -337,7 +363,14 @@ const GroceryList = () => {
       }) => {
         const bottles = Math.ceil(wine.servings / 5); //should give me the number of bottles, 5 servings per 750mL bottle
         return (
-          <Typography component="li" sx={{ fontSize: ".5em" }}>
+          <Typography
+            component="p"
+            sx={{
+              marginLeft: "10px",
+              // fontSize: ".5em"
+            }}
+            className="wineIngredient"
+          >
             {bottles} {bottles === 1 ? "bottle" : "bottles"} (750mL) of{" "}
             {wine.name}
           </Typography>
@@ -360,7 +393,14 @@ const GroceryList = () => {
           | undefined;
       }) => {
         return (
-          <Typography component="li" sx={{ fontSize: ".5em" }}>
+          <Typography
+            component="p"
+            sx={{
+              marginLeft: "10px",
+              // fontSize: ".5em"
+            }}
+            className="beerIngredient"
+          >
             {beer.servings} {beer.name}
           </Typography>
         );
@@ -513,7 +553,7 @@ const GroceryList = () => {
         } else {
           return (
             <>
-              <div style={{ color: "red" }} className="amountUndefined">
+              {/* <div style={{ color: "red" }} className="amountUndefined">
                 <EditGroceryItem
                   ingredient={garnishCalcd}
                   collection={garnishCollection}
@@ -526,7 +566,7 @@ const GroceryList = () => {
                 <Typography component="li" sx={{ fontSize: ".5em" }}>
                   {garnishCalcd.item}
                 </Typography>
-              </div>
+              </div> */}
             </>
           );
         }
@@ -544,7 +584,11 @@ const GroceryList = () => {
         return cocktail.extraIngredients.map((ingredient: string) => {
           if (ingredient) {
             return (
-              <Typography component="li" sx={{ fontSize: ".5em" }}>
+              <Typography
+                component="li"
+                sx={{ fontSize: ".5em" }}
+                className="extraIngredient"
+              >
                 enough {ingredient} for {cocktail.servings} servings
               </Typography>
             );
@@ -590,133 +634,204 @@ const GroceryList = () => {
   return (
     <>
       {((stateCocktails.length > 0 && stateCocktails[0].$id) ||
-        (stateWines.length > 0 && stateWines[0].name)) && (
-        <>
-          <Grid container md={3}>
-            <Grid item>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={stateShowGroceryTotals}
-                    inputProps={{
-                      "aria-label": "controlled",
-                    }}
-                    onChange={() =>
-                      dispatch(setShowGroceryTotals(!stateShowGroceryTotals))
-                    }
-                  />
-                }
-                label={<>Show Totals</>}
-                sx={{
-                  "& .MuiTypography-root": {
-                    fontFamily: "Bree",
-                  },
+        (stateWines.length > 0 && stateWines[0].name)) &&
+        ((liquor && liquor.length > 0) ||
+          (mixers && mixers.length > 0) ||
+          (wine && wine.length > 0)) && (
+          <>
+            <Grid container md={3} sx={{ flexDirection: "column" }}>
+              <Grid item>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={stateShowGroceryTotals}
+                      inputProps={{
+                        "aria-label": "controlled",
+                      }}
+                      onChange={() =>
+                        dispatch(setShowGroceryTotals(!stateShowGroceryTotals))
+                      }
+                    />
+                  }
+                  label={<>Show Totals</>}
+                  sx={{
+                    "& .MuiTypography-root": {
+                      fontFamily: "Bree",
+                    },
 
-                  "& .MuiCheckbox-root": {
-                    padding: "2px",
-                  },
+                    "& .MuiCheckbox-root": {
+                      padding: "2px",
+                    },
+                  }}
+                  className="showGroceryTotals"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={stateShowGroceryPrices}
+                      inputProps={{
+                        "aria-label": "controlled",
+                      }}
+                      onChange={() =>
+                        dispatch(setShowGroceryPrices(!stateShowGroceryPrices))
+                      }
+                    />
+                  }
+                  label={<>Show Prices</>}
+                  sx={{
+                    "& .MuiTypography-root": {
+                      fontFamily: "Bree",
+                    },
+
+                    "& .MuiCheckbox-root": {
+                      padding: "2px",
+                    },
+                  }}
+                  className="showGroceryTotals"
+                />
+              </Grid>
+              <Grid
+                item
+                // md={3}
+                ref={groceryRef}
+                className="groceryList"
+                sx={{
+                  textAlign: "left",
+                  position: "relative",
+                  // padding: "20px"
                 }}
-                className="showGroceryTotals"
-              />
-            </Grid>
-            <Grid
-              item
-              // md={3}
-              className="groceryList"
-              sx={{
-                textAlign: "left",
-                // padding: "20px"
-              }}
-            >
-              <Typography
-                component="h3"
-                sx={{ color: "var(--green)!important" }}
               >
-                Grocery List:
-              </Typography>
-              {liquor && liquor.length > 0 && (
-                <Typography
-                  component="h3"
-                  sx={{
-                    color: "var(--gray)!important",
-                    fontWeight: "400!important",
-                    fontFamily: "Bree Serif!important",
-                  }}
+                <Tooltip
+                  arrow
+                  placement="bottom"
+                  // disableInteractive
+                  // slotProps={{
+                  //   popper: {
+                  //     modifiers: [
+                  //       {
+                  //         name: "offset",
+                  //         options: {
+                  //           offset: [0, -5],
+                  //         },
+                  //       },
+                  //     ],
+                  //   },
+                  // }}
+                  title={!copied ? "Copy to Clipboard" : "Copied!"}
                 >
-                  Liquor
-                </Typography>
-              )}
-              {liquor}
-              {wine && wine.length > 0 && (
+                  <IconButton
+                    className="copyBtn"
+                    aria-label="copy"
+                    onClick={copyToClipboard}
+                    sx={{
+                      position: "absolute",
+                      right: "5px",
+                      top: "5px",
+                      color: "var(--green)",
+                    }}
+                  >
+                    <ContentCopyOutlinedIcon></ContentCopyOutlinedIcon>
+                  </IconButton>
+                </Tooltip>
                 <Typography
-                  component="h3"
-                  sx={{
-                    color: "var(--gray)!important",
-                    fontWeight: "400!important",
-                    fontFamily: "Bree Serif!important",
-                  }}
+                  component="h2"
+                  sx={{ color: "var(--green)!important" }}
                 >
-                  Wine
+                  Grocery List:
                 </Typography>
-              )}
-              {wine}
-              {beer && beer.length > 0 && (
-                <Typography
-                  component="h3"
-                  sx={{
-                    color: "var(--gray)!important",
-                    fontWeight: "400!important",
-                    fontFamily: "Bree Serif!important",
-                  }}
-                >
-                  Beer
-                </Typography>
-              )}
-              {beer}
-              {mixers && mixers.length > 0 && (
-                <Typography
-                  component="h3"
-                  sx={{
-                    color: "var(--gray)!important",
-                    fontWeight: "400!important",
-                    fontFamily: "Bree Serif!important",
-                  }}
-                >
-                  Mixers
-                </Typography>
-              )}
-              {mixers}
-              {/* {extraIngredients && extraIngredients.length > 0 && (
+                {liquor && liquor.length > 0 && (
+                  <Typography
+                    component="h3"
+                    sx={{
+                      color: "var(--gray)!important",
+                      fontWeight: "400!important",
+                      fontFamily: "Bree Serif!important",
+
+                      marginTop: "20px",
+                    }}
+                  >
+                    Liquor
+                  </Typography>
+                )}
+                {liquor}
+                {wine && wine.length > 0 && (
+                  <Typography
+                    component="h3"
+                    sx={{
+                      color: "var(--gray)!important",
+                      fontWeight: "400!important",
+                      fontFamily: "Bree Serif!important",
+                      marginTop: "20px",
+                    }}
+                  >
+                    Wine
+                  </Typography>
+                )}
+                {wine}
+                {beer && beer.length > 0 && (
+                  <Typography
+                    component="h3"
+                    sx={{
+                      color: "var(--gray)!important",
+                      fontWeight: "400!important",
+                      fontFamily: "Bree Serif!important",
+
+                      marginTop: "20px",
+                    }}
+                  >
+                    Beer
+                  </Typography>
+                )}
+                {beer}
+                {mixers && mixers.length > 0 && (
+                  <Typography
+                    component="h3"
+                    sx={{
+                      color: "var(--gray)!important",
+                      fontWeight: "400!important",
+                      fontFamily: "Bree Serif!important",
+
+                      marginTop: "20px",
+                    }}
+                  >
+                    Mixers
+                  </Typography>
+                )}
+                {mixers}
+                {/* {extraIngredients && extraIngredients.length > 0 && (
             <Typography
               component="h3"
               sx={{
                 color: "var(--gray)!important",
                 fontWeight: "400!important",
                 fontFamily: "Bree Serif!important",
+                
+                marginTop: "20px",
               }}
             >
               Extra Ingredients
             </Typography>
           )}
           {extraIngredients} */}
-              {garnish && garnish.length > 0 && (
-                <Typography
-                  component="h3"
-                  sx={{
-                    color: "var(--gray)!important",
-                    fontWeight: "400!important",
-                    fontFamily: "Bree Serif!important",
-                  }}
-                >
-                  Other Items
-                </Typography>
-              )}
-              {garnish}
+                {garnish && garnish.length > 0 && (
+                  <Typography
+                    component="h3"
+                    sx={{
+                      color: "var(--gray)!important",
+                      fontWeight: "400!important",
+                      fontFamily: "Bree Serif!important",
+                      marginTop: "20px",
+                    }}
+                  >
+                    Other Items
+                  </Typography>
+                )}
+                {garnish}
+              </Grid>
             </Grid>
-          </Grid>
-        </>
-        // END .groceryList
-      )}
+          </>
+          // END .groceryList
+        )}
     </>
   );
 };

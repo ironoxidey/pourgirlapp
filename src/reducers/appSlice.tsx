@@ -4,13 +4,17 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 type AppState = {
   cocktailsUpdate: number;
   rightToMakeChanges: string;
+  lastToMakeChanges: string;
   showGroceryTotals: boolean;
+  showGroceryPrices: boolean;
 };
 
 const initialState: AppState = {
   cocktailsUpdate: 0,
   rightToMakeChanges: "FORM",
+  lastToMakeChanges: "FORM",
   showGroceryTotals: false,
+  showGroceryPrices: false,
 };
 //This was really helpful when setting this up: https://redux-toolkit.js.org/usage/usage-with-typescript
 
@@ -29,8 +33,14 @@ export const appSlice = createSlice({
     setRightToMakeChanges: (state, action: PayloadAction<string>) => {
       state.rightToMakeChanges = action.payload;
     },
+    setLastToMakeChanges: (state, action: PayloadAction<string>) => {
+      state.lastToMakeChanges = action.payload;
+    },
     setShowGroceryTotals: (state, action: PayloadAction<boolean>) => {
       state.showGroceryTotals = action.payload;
+    },
+    setShowGroceryPrices: (state, action: PayloadAction<boolean>) => {
+      state.showGroceryPrices = action.payload;
     },
   },
 });
@@ -38,7 +48,9 @@ export const appSlice = createSlice({
 export const {
   setCocktailsUpdate,
   setRightToMakeChanges,
+  setLastToMakeChanges,
   setShowGroceryTotals,
+  setShowGroceryPrices,
 } = appSlice.actions;
 
 export default appSlice.reducer;

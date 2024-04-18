@@ -7,32 +7,136 @@ import { useAppSelector, useAppDispatch } from "../reducers/hooks";
 import { Cocktail } from "../types/Cocktail";
 import { Wine } from "../types/Wine";
 import { Beer } from "../types/Beer";
-import { updateServings } from "../reducers/groceriesSlice";
-import { setRightToMakeChanges } from "../reducers/appSlice";
+import {
+  updateCocktail,
+  updateWine,
+  updateBeer,
+} from "../reducers/groceriesSlice";
+import {
+  setRightToMakeChanges,
+  setLastToMakeChanges,
+} from "../reducers/appSlice";
 
 const DraggablePieChart = () => {
-  const groceriesCocktails: Cocktail[] = useAppSelector(
+  const groceriesCocktails = useAppSelector(
     (state: any) => state.groceries.cocktails
   );
-  const groceriesWines: Wine[] = useAppSelector(
-    (state: any) => state.groceries.wines
-  );
-  const groceriesBeers: Beer[] = useAppSelector(
-    (state: any) => state.groceries.beers
-  );
+  const groceriesWines = useAppSelector((state: any) => state.groceries.wines);
+  const groceriesBeers = useAppSelector((state: any) => state.groceries.beers);
 
   const dispatch = useAppDispatch();
 
   const appRightToMakeChanges: string = useAppSelector(
     (state: any) => state.app.rightToMakeChanges
   );
+  const appLastToMakeChanges: string = useAppSelector(
+    (state: any) => state.app.lastToMakeChanges
+  );
 
-  const [stateRightToMakeChanges, setStateRightToMakeChanges] =
-    useState("FORM");
+  // const [stateRightToMakeChanges, setStateRightToMakeChanges] =
+  //   useState("FORM");
 
-  useEffect(() => {
-    setStateRightToMakeChanges(appRightToMakeChanges);
-  }, [appRightToMakeChanges]);
+  // useEffect(() => {
+  //   setStateRightToMakeChanges(appRightToMakeChanges);
+  // }, [appRightToMakeChanges]);
+
+  const calcNewTotalServings = () =>
+    [
+      ...[
+        groceriesCocktails.reduce((acc: any, curr: { servings: any }) => {
+          if (curr.servings > 0) {
+            return acc + curr.servings;
+          } else {
+            return acc;
+          }
+        }, 0),
+      ],
+      ...[
+        groceriesWines.reduce((acc: any, curr: { servings: any }) => {
+          if (curr.servings > 0) {
+            return acc + curr.servings;
+          } else {
+            return acc;
+          }
+        }, 0),
+      ],
+      ...[
+        groceriesBeers.reduce((acc: any, curr: { servings: any }) => {
+          if (curr.servings > 0) {
+            return acc + curr.servings;
+          } else {
+            return acc;
+          }
+        }, 0),
+      ],
+    ].reduce((acc, curr) => acc + curr, 0);
+
+  const updateServings = (percentages: []) => {
+    console.log("updating Servings");
+
+    if (appLastToMakeChanges !== "CHART") {
+      dispatch(setLastToMakeChanges("CHART"));
+    }
+
+    const totalServings = calcNewTotalServings();
+    console.log("totalServings", totalServings);
+
+    // console.log(
+    //   "groceriesCocktails.length + groceriesWines.length + groceriesBeers.length",
+    //   groceriesCocktails.length + groceriesWines.length + groceriesBeers.length
+    // );
+
+    if (
+      // totalServings === 1000 &&
+      percentages.length ===
+      groceriesCocktails.length + groceriesWines.length + groceriesBeers.length
+    ) {
+      if (groceriesCocktails && groceriesCocktails.length > 0) {
+        groceriesCocktails.map((cocktail: any) => {
+          const newServings = Math.round(
+            totalServings * (percentages[cocktail.index] / 100)
+          );
+
+          console.log(
+            "cocktail" + cocktail.index,
+            "newServings",
+            newServings,
+            "percentage",
+            percentages[cocktail.index] / 100
+          );
+          if (newServings !== cocktail.servings)
+            dispatch(
+              updateCocktail({
+                ...cocktail,
+                servings: newServings,
+              })
+            );
+        });
+      }
+      // if (groceriesWines && groceriesWines.length > 0) {
+      //   groceriesWines.map((wine: any) => {
+      //     const newServings = totalServings * (percentages[wine.index] / 100);
+      //     dispatch(
+      //       updateWine({
+      //         ...wine,
+      //         servings: newServings,
+      //       })
+      //     );
+      //   });
+      // }
+      // if (groceriesBeers && groceriesBeers.length > 0) {
+      //   groceriesBeers.map((beer: any) => {
+      //     const newServings = totalServings * (percentages[beer.index] / 100);
+      //     dispatch(
+      //       updateBeer({
+      //         ...beer,
+      //         servings: newServings,
+      //       })
+      //     );
+      //   });
+      // }
+    }
+  };
 
   const canvasRef = useRef(null);
 
@@ -56,6 +160,20 @@ const DraggablePieChart = () => {
   }, []);
 
   const [newPie, setNewPie] = useState<DraggablePiechart>();
+
+  const cleanup = () => {
+    if (newPie) {
+      setNewPie(null);
+      // newPie.removeAllEventListeners(); // Remove all event listeners from the previous instance
+      // const canvas = canvasRef.current;
+      // if (canvas) {
+      //   const ctx = canvas.getContext("2d");
+      //   if (ctx) {
+      //     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+      //   }
+      // }
+    }
+  };
   useEffect(() => {
     if (
       (groceriesCocktails.length > 0 && groceriesCocktails[0].$id) ||
@@ -79,10 +197,15 @@ const DraggablePieChart = () => {
       // 	{ proportion: 1.5, format: { color: '#e9aa90', label: 'Other' } },
       // ];
       // var randomProportions = generateRandomProportions(dimensions.length, 0.05);
-      var cocktailsProportions = groceriesCocktails.map(function (cocktail, i) {
+      cleanup();
+
+      var cocktailsProportions = groceriesCocktails.map(function (
+        cocktail: { servings: number; fieldID: any; name: any },
+        i: any
+      ) {
         return {
           proportion: cocktail.servings ? cocktail.servings : 0,
-          collapsed: cocktail.servings ? false : true,
+          collapsed: cocktail.servings && cocktail.servings > 0 ? false : true,
           fieldID: cocktail.fieldID,
           format: {
             label: cocktail.name ? cocktail.name : "",
@@ -90,10 +213,13 @@ const DraggablePieChart = () => {
           },
         };
       });
-      var winesProportions = groceriesWines.map(function (wine, i) {
+      var winesProportions = groceriesWines.map(function (
+        wine: { servings: number; fieldID: any; name: any },
+        i: any
+      ) {
         return {
           proportion: wine.servings ? wine.servings : 0,
-          collapsed: wine.servings ? false : true,
+          collapsed: wine.servings && wine.servings > 0 ? false : true,
           fieldID: wine.fieldID,
           format: {
             label: wine.name ? wine.name : "",
@@ -101,10 +227,13 @@ const DraggablePieChart = () => {
           },
         };
       });
-      var beersProportions = groceriesBeers.map(function (beer, i) {
+      var beersProportions = groceriesBeers.map(function (
+        beer: { servings: number; fieldID: any; name: any },
+        i: any
+      ) {
         return {
           proportion: beer.servings ? beer.servings : 0,
-          collapsed: beer.servings ? false : true,
+          collapsed: beer.servings && beer.servings > 0 ? false : true,
           fieldID: beer.fieldID,
           format: {
             label: beer.name ? beer.name : "",
@@ -128,7 +257,9 @@ const DraggablePieChart = () => {
       };
 
       //console.log('newPie', newPie);
+
       setNewPie(new DraggablePiechart(setup));
+
       //console.log('newPie', newPie);
 
       function drawSegmentFillText( //pulled this from the source code of https://raw.githack.com/heldersepu/draggable-piechart/master/example2.html linked from https://stackoverflow.com/a/61642962
@@ -232,40 +363,44 @@ const DraggablePieChart = () => {
         //console.log('onPieChartChange');
         // var table: HTMLElement | null =
         // 	document.getElementById('proportions-table');
-        // var percentages = piechart.getAllSliceSizePercentages();
-        // var labelsRow = '<tr>';
-        // var propsRow = '<tr>';
+        var percentages = piechart.getAllSliceSizePercentages();
+        console.log("percentages", percentages);
+        if (appRightToMakeChanges === "CHART") {
+          // updateServings(percentages);
+        }
+        // var labelsRow = "<tr>";
+        // var propsRow = "<tr>";
         // for (var i = 0; i < proportions.length; i += 1) {
-        // 	labelsRow += '<th>' + proportions[i].format.label + '</th>';
-        // 	var v = '<var>' + percentages[i].toFixed(0) + '%</var>';
-        // 	var plus =
-        // 		'<div id="plu-' +
-        // 		groceriesCocktails[i].name +
-        // 		'" class="adjust-button" data-i="' +
-        // 		i +
-        // 		'" data-d="-1">&#43;</div>';
-        // 	var minus =
-        // 		'<div id="min-' +
-        // 		groceriesCocktails[i].name +
-        // 		'" class="adjust-button" data-i="' +
-        // 		i +
-        // 		'" data-d="1">&#8722;</div>';
-        // 	propsRow += '<td>' + v + plus + minus + '</td>';
-        // 	// console.log(
-        // 	// 	'useEffect stateRightToMakeChanges: ',
-        // 	// 	stateRightToMakeChanges
-        // 	// ); //for some reason this isn't staying up to date...
-        // 	// if (stateRightToMakeChanges === 'CHART') {
-        // 	// 	dispatch(
-        // 	// 		updateServings({
-        // 	// 			servings: proportions[i].proportion,
-        // 	// 			fieldID: proportions[i].fieldID,
-        // 	// 		})
-        // 	// 	);
-        // 	// }
+        //   labelsRow += "<th>" + proportions[i].format.label + "</th>";
+        //   var v = "<var>" + percentages[i].toFixed(0) + "%</var>";
+        //   var plus =
+        //     '<div id="plu-' +
+        //     groceriesCocktails[i].name +
+        //     '" class="adjust-button" data-i="' +
+        //     i +
+        //     '" data-d="-1">&#43;</div>';
+        //   var minus =
+        //     '<div id="min-' +
+        //     groceriesCocktails[i].name +
+        //     '" class="adjust-button" data-i="' +
+        //     i +
+        //     '" data-d="1">&#8722;</div>';
+        //   propsRow += "<td>" + v + plus + minus + "</td>";
+        //   // console.log(
+        //   // 	'useEffect stateRightToMakeChanges: ',
+        //   // 	stateRightToMakeChanges
+        //   // ); //for some reason this isn't staying up to date...
+        //   // if (stateRightToMakeChanges === 'CHART') {
+        //   // 	dispatch(
+        //   // 		updateServings({
+        //   // 			servings: proportions[i].proportion,
+        //   // 			fieldID: proportions[i].fieldID,
+        //   // 		})
+        //   // 	);
+        //   // }
         // }
-        // labelsRow += '</tr>';
-        // propsRow += '</tr>';
+        // labelsRow += "</tr>";
+        // propsRow += "</tr>";
         // if (table) {
         // 	table.innerHTML = labelsRow + propsRow;
         // }
@@ -340,6 +475,9 @@ const DraggablePieChart = () => {
         return arr;
       }
     }
+    return () => {
+      setNewPie(null);
+    };
     //numChartUpdates.current.push(numChartUpdates.current.length); //make a new element to put a canvas in
   }, [groceriesCocktails, groceriesWines, groceriesBeers]);
   //console.log("useEffect stateRightToMakeChanges: ", stateRightToMakeChanges);

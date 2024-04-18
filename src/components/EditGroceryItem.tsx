@@ -43,6 +43,9 @@ const EditGroceryItem = (props: propsTypes) => {
   const stateShowGroceryTotals = useAppSelector(
     (state: any) => state.app.showGroceryTotals
   );
+  const stateShowGroceryPrices = useAppSelector(
+    (state: any) => state.app.showGroceryPrices
+  );
 
   // console.log("props", props);
   const dialogHandleClose = () => {
@@ -249,6 +252,62 @@ const EditGroceryItem = (props: propsTypes) => {
                     }`);
         }
       } else if (
+        theMatchingGroceryItem?.unit === "oz" &&
+        !theMatchingGroceryItem.unitsPerContainer &&
+        props.collection &&
+        props.itemMultiples
+      ) {
+        let amountOfThisItem = sumItems(
+          props.collection,
+          props.ingredient.item,
+          props.itemMultiples,
+          "oz"
+        ) as number;
+        // console.log(
+        //   "amountOfThisItem (" + props.ingredient.item + ")",
+        //   amountOfThisItem
+        // );
+        if (amountOfThisItem > 0) {
+          setComputedGroceryItem(
+            `${amountOfThisItem}oz of ${props.ingredient.item}`
+          );
+        } else {
+          setComputedGroceryItem(`${props.ingredient.item}`);
+        }
+      } else if (
+        theMatchingGroceryItem?.unit === "mL" &&
+        !theMatchingGroceryItem.unitsPerContainer &&
+        props.collection &&
+        props.ingredient.item &&
+        props.itemMultiples
+      ) {
+        let amountOfThisItem = sumItems(
+          props.collection,
+          props.ingredient.item,
+          props.itemMultiples,
+          "mL"
+        ) as number;
+        // console.log(
+        //   "amountOfThisItem (" + props.ingredient.item + ")",
+        //   amountOfThisItem
+        // );
+        // if (amountOfThisItem > 0) {
+        //   setComputedGroceryItem(
+        //     `${amountOfThisItem}mL of ${props.ingredient.item}`
+        //   );
+        // } else {
+        //   setComputedGroceryItem(`${props.ingredient.item}`);
+        // }
+
+        const bottles = Math.ceil(amountOfThisItem / 750); //should give me the number of bottles
+        setComputedGroceryItem(
+          `${bottles} ${
+            amountOfThisItem && Math.ceil(amountOfThisItem / 750) > 1
+              ? pluralize("bottle")
+              : pluralize.singular("bottle")
+          } (750mL/bottle) of ${props.ingredient.item}`
+        );
+      } else if (
         props?.measureBy === "mL" &&
         props.collection &&
         props.ingredient.item &&
@@ -391,73 +450,112 @@ const EditGroceryItem = (props: propsTypes) => {
 
       {computedGroceryItem ? (
         <>
-          <Grid
-            container
+          <p
+            // container
             className="groceryItem"
-            sx={{
-              flexDirection: "row",
-              flexWrap: "nowrap",
+            style={{
+              display: "block",
+              // flexDirection: "row",
+              // flexWrap: "nowrap",
               alignItems: "center",
-              marginBottom: "10px",
+              marginTop: "5px",
+              marginBottom: "5px",
+              marginLeft: "10px",
+              clear: "both",
+              width: "auto",
             }}
           >
             {theMatchingGroceryItem?.img && (
-              <Grid
-                item
-                sx={{ cursor: "pointer" }}
+              // <Grid
+              //   item
+              //   sx={{
+              //     cursor: "zoom-in",
+              //     transition: ".2s all ease-in-out",
+              //      "&:hover": {
+              //        transform: "scale(5,5)",
+              //      },
+              //   }}
+              // >
+              <img
+                src={theMatchingGroceryItem?.img}
+                style={{
+                  width: "30px",
+                  marginRight: "4px",
+                  display: "inline",
+                  float: "left",
+                }}
                 onClick={() => setDialogOpen(true)}
-              >
-                <img
-                  src={theMatchingGroceryItem?.img}
-                  style={{
-                    width: "30px",
-                    marginRight: "4px",
-                    display: "inline",
-                  }}
-                ></img>
-              </Grid>
+              ></img>
+              // </Grid>
             )}
 
-            <Grid item sx={{ lineHeight: "1.2" }}>
-              <span
-                className="groceryItemText"
-                style={{ cursor: "pointer", lineHeight: "1.2" }}
-                onClick={() => setDialogOpen(true)}
-              >
-                {computedGroceryItem}
-              </span>
+            {/* <Grid item sx={{ lineHeight: "1.2" }}> */}
+            <span
+              className="groceryItemText"
+              style={{
+                // cursor: "pointer",
+                margin: "0",
+                lineHeight: "1.2",
+              }}
+              onClick={() => setDialogOpen(true)}
+            >
+              {computedGroceryItem}
+            </span>
 
-              {theMatchingGroceryItem &&
-                theMatchingGroceryItem.whereToBuy &&
-                theMatchingGroceryItem.whereToBuy.length > -1 &&
-                theMatchingGroceryItem.whereToBuy.map((whereToBuyURL) => {
-                  if (whereToBuyURL !== undefined && whereToBuyURL !== "") {
-                    const theURL = new URL(whereToBuyURL);
-                    return (
-                      <a
-                        href={whereToBuyURL}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ marginLeft: "4px" }}
-                        title={toTitleCase(pullDomainFrom(whereToBuyURL))}
-                      >
-                        <img
-                          src={
-                            "https://www.google.com/s2/favicons?domain=" +
-                            theURL.hostname
-                          }
-                        />
-                      </a>
-                    );
-                  }
-                })}
-              {stateShowGroceryTotals &&
+            {theMatchingGroceryItem &&
+              theMatchingGroceryItem.whereToBuy &&
+              theMatchingGroceryItem.whereToBuy.length > -1 &&
+              theMatchingGroceryItem.whereToBuy.map((whereToBuyURL) => {
+                if (whereToBuyURL !== undefined && whereToBuyURL !== "") {
+                  const theURL = new URL(whereToBuyURL);
+                  return (
+                    <a
+                      href={whereToBuyURL}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ marginLeft: "4px" }}
+                      title={toTitleCase(pullDomainFrom(whereToBuyURL))}
+                    >
+                      <img
+                        src={
+                          "https://www.google.com/s2/favicons?domain=" +
+                          theURL.hostname
+                        }
+                      />
+                    </a>
+                  );
+                }
+              })}
+
+            {stateShowGroceryPrices &&
+              theMatchingGroceryItem &&
+              theMatchingGroceryItem.avgPrice &&
+              numContainers && (
+                <span
+                  className="totalAmount"
+                  style={{
+                    display: "block",
+                    fontSize: ".6em",
+                    lineHeight: "1",
+                  }}
+                >
+                  $
+                  {(
+                    Math.round(
+                      (theMatchingGroceryItem.avgPrice * numContainers || 0) *
+                        100
+                    ) / 100
+                  ).toFixed(2)}
+                </span>
+              )}
+
+            {stateShowGroceryTotals &&
               props.amountOfThisItem &&
               props.amountOfThisItem > 0 &&
               props.measureBy &&
               (props.measureBy === "mL" ||
                 props.measureBy === "ounces" ||
-                props.measureBy === "oz") ? (
+                props.measureBy === "oz") && (
                 <span
                   className="totalAmount"
                   style={{
@@ -468,11 +566,9 @@ const EditGroceryItem = (props: propsTypes) => {
                 >
                   (Total: {props.amountOfThisItem + props.measureBy})
                 </span>
-              ) : (
-                ""
               )}
-            </Grid>
-          </Grid>
+            {/* </Grid> */}
+          </p>
         </>
       ) : (
         <IconButton onClick={() => setDialogOpen(true)}>

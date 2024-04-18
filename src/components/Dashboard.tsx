@@ -42,6 +42,7 @@ import { Cocktail } from "../types/Cocktail";
 import WineSelect from "./WineSelect";
 import BeerSelect from "./BeerSelect";
 import EventDetails from "./EventDetails";
+import ServingsStats from "./ServingsStats";
 
 //import AutocompleteWrapper from './common/AutoComplete';
 
@@ -219,6 +220,7 @@ const Dashboard = () => {
     );
     console.log("cocktailFields", cocktailFields);
   }, [stateCocktailsLength]);
+  // }, [stateCocktailsLength, stateGroceryCocktails]); //this creates a weird loop
 
   //Wines
   const [wineFields, setWineFields] = useState<any>([]);
@@ -433,8 +435,9 @@ const Dashboard = () => {
               stateGroceryCocktails[0].$id) ||
               (stateGroceryWines.length > 0 && stateGroceryWines[0].name) ||
               (stateGroceryBeers.length > 0 && stateGroceryBeers[0].name)) && (
-              <Grid item sm={3}>
+              <Grid item sm={3} className="dashboardPieChartContainer">
                 <DraggablePieChart />
+                <ServingsStats></ServingsStats>
               </Grid>
             )}
             {/* END .cocktailCalc */}
